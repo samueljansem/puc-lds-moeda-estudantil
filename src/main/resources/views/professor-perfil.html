@@ -14,8 +14,11 @@
         <dt>Saldo de moedas</dt><dd th:text="${professor.saldo}"></dd>
     </dl>
 
-    <p class="muted">As ações de transferir moedas, listar alunos e ver
-        extrato serão liberadas nas próximas fases.</p>
+    <div class="acoes">
+        <a class="botao" href="/professores/transferir">Transferir moedas</a>
+        <a class="botao-secundario" href="/professores/extrato">Ver extrato</a>
+        <a class="botao-secundario" href="/notificacoes">Notificações</a>
+    </div>
 </div>
 </body>
 </html>

@@ -4,9 +4,12 @@
 <body>
 <div th:fragment="conteudo" class="card">
     <h1>Administração</h1>
-    <p>Você está logado como administrador.</p>
-    <p class="muted">As ações administrativas (conceder semestre,
-        caixa global de notificações) serão liberadas nas próximas fases.</p>
+    <p>Bem-vindo à área administrativa.</p>
+
+    <ul class="lista-acoes">
+        <li><a href="/admin/semestre">Conceder semestre (1.000 moedas a todos os professores)</a></li>
+        <li><a href="/admin/notificacoes">Caixa global de notificações</a></li>
+    </ul>
 </div>
 </body>
 </html>

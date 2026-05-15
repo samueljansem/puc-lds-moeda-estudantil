@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Minhas Notificações</h1>
+
+    <p class="muted">
+        Notificações enviadas para <strong th:text="${email}">—</strong>.
+    </p>
+
+    <table class="tabela-extrato" th:if="${!notificacoes.isEmpty()}">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Assunto</th>
+                <th>Status</th>
+                <th>Mensagem</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="n : ${notificacoes}">
+                <td th:text="${#temporals.format(n.criadaEm, 'dd/MM/yyyy HH:mm')}">—</td>
+                <td th:text="${n.assunto}">—</td>
+                <td th:text="${n.status}"
+                    th:class="${n.status.name() == 'ENVIADA'} ? 'status-ok' : 'status-falha'">—</td>
+                <td><pre class="corpo-notif" th:text="${n.corpo}">—</pre></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p th:if="${notificacoes.isEmpty()}" class="aviso">
+        Você ainda não recebeu notificações.
+    </p>
+</div>
+</body>
+</html>

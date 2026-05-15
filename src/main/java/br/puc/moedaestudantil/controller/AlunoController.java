@@ -6,7 +6,9 @@ import br.puc.moedaestudantil.dto.CadastroAlunoForm;
 import br.puc.moedaestudantil.dto.EditaAlunoForm;
 import br.puc.moedaestudantil.exception.CadastroDuplicadoException;
 import br.puc.moedaestudantil.model.Aluno;
+import br.puc.moedaestudantil.service.LinhaExtrato;
 import br.puc.moedaestudantil.service.ServicoCadastro;
+import br.puc.moedaestudantil.service.ServicoMoeda;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpResponse;
@@ -25,6 +27,7 @@ import jakarta.validation.Valid;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller("/alunos")
@@ -33,13 +36,16 @@ public class AlunoController {
     private final ServicoCadastro servicoCadastro;
     private final AlunoDAO alunoDAO;
     private final InstituicaoDAO instituicaoDAO;
+    private final ServicoMoeda servicoMoeda;
 
     public AlunoController(ServicoCadastro servicoCadastro,
                            AlunoDAO alunoDAO,
-                           InstituicaoDAO instituicaoDAO) {
+                           InstituicaoDAO instituicaoDAO,
+                           ServicoMoeda servicoMoeda) {
         this.servicoCadastro = servicoCadastro;
         this.alunoDAO = alunoDAO;
         this.instituicaoDAO = instituicaoDAO;
+        this.servicoMoeda = servicoMoeda;
     }
 
     @Get("/cadastro")
@@ -105,6 +111,20 @@ public class AlunoController {
                     "erroDuplicado", e.getCampo()
             )));
         }
+    }
+
+    @Get("/extrato")
+    @View("aluno-extrato")
+    @Secured("ALUNO")
+    @Produces(MediaType.TEXT_HTML)
+    public Map<String, Object> extrato(Authentication authentication) {
+        Aluno aluno = carregarAlunoLogado(authentication);
+        List<LinhaExtrato> linhas = servicoMoeda.extratoAluno(aluno.getId());
+        Map<String, Object> model = new HashMap<>();
+        model.put("titulo", "Meu Extrato");
+        model.put("aluno", aluno);
+        model.put("linhas", linhas);
+        return model;
     }
 
     private Aluno carregarAlunoLogado(Authentication authentication) {

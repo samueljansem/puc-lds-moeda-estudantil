@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Conceder Semestre</h1>
+
+    <p th:if="${creditados > 0}" class="alerta-sucesso">
+        Concessão realizada: <strong th:text="${creditados}">0</strong> professor(es)
+        receberam 1.000 moedas cada. O saldo é acumulativo.
+    </p>
+
+    <p>
+        Esta ação concede <strong>1.000 moedas</strong> a cada professor cadastrado.
+        O saldo é acumulado (FR-004): moedas não gastas em semestres anteriores
+        são preservadas.
+    </p>
+
+    <h2>Professores atuais</h2>
+    <table class="tabela-extrato" th:if="${!professores.isEmpty()}">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Departamento</th>
+                <th>Instituição</th>
+                <th>Saldo atual</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="p : ${professores}">
+                <td th:text="${p.nome}">—</td>
+                <td th:text="${p.departamento}">—</td>
+                <td th:text="${p.instituicao.nome}">—</td>
+                <td th:text="${p.saldo}">0</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <form action="/admin/semestre/conceder" method="POST" class="form-conceder">
+        <button type="submit">Conceder 1.000 moedas a todos os professores</button>
+        <a class="botao-secundario" href="/admin/inicio">Voltar</a>
+    </form>
+</div>
+</body>
+</html>

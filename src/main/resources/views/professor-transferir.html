@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Transferir Moedas</h1>
+
+    <p class="dados-saldo">
+        Saldo atual: <strong th:text="${professor.saldo}">0</strong> moedas.
+    </p>
+
+    <p th:if="${erro == 'saldoInsuficiente'}" class="alerta-erro">
+        Saldo insuficiente para realizar a transferência.
+    </p>
+    <p th:if="${erro == 'dadosInvalidos'}" class="alerta-erro"
+       th:text="${detalheErro != null} ? ${detalheErro} : 'Dados inválidos.'">
+        Dados inválidos.
+    </p>
+
+    <form action="/professores/transferir" method="POST" th:if="${!alunos.isEmpty()}">
+        <label>
+            Aluno destinatário
+            <select name="alunoId" required>
+                <option value="">— Selecione um aluno —</option>
+                <option th:each="a : ${alunos}"
+                        th:value="${a.id}"
+                        th:text="${a.nome + ' (' + a.curso + ')'}"
+                        th:selected="${form != null and form.alunoId() == a.id}"></option>
+            </select>
+        </label>
+        <label>
+            Valor (moedas)
+            <input type="number" name="valor" min="1" required
+                   th:value="${form != null} ? ${form.valor()} : ''">
+        </label>
+        <label>
+            Motivo (obrigatório)
+            <textarea name="motivo" maxlength="500" rows="3" required
+                      th:text="${form != null} ? ${form.motivo()} : ''"></textarea>
+        </label>
+        <button type="submit">Enviar moedas</button>
+        <a class="botao-secundario" href="/professores/perfil">Cancelar</a>
+    </form>
+
+    <p th:if="${alunos.isEmpty()}" class="aviso">
+        Não há alunos cadastrados na sua instituição ainda.
+    </p>
+</div>
+</body>
+</html>

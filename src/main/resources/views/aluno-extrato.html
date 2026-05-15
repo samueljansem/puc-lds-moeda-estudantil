@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Meu Extrato</h1>
+
+    <p class="dados-saldo">
+        Saldo atual: <strong th:text="${aluno.saldo}">0</strong> moedas.
+    </p>
+
+    <table class="tabela-extrato" th:if="${!linhas.isEmpty()}">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Tipo</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Motivo / Código</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="l : ${linhas}">
+                <td th:text="${#temporals.format(l.data(), 'dd/MM/yyyy HH:mm')}">—</td>
+                <td th:text="${l.tipo()}">—</td>
+                <td th:text="${l.descricao()}">—</td>
+                <td th:text="${l.valor()}"
+                    th:class="${l.valor() &gt;= 0} ? 'valor-positivo' : 'valor-negativo'">0</td>
+                <td th:text="${l.referencia()}">—</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p th:if="${linhas.isEmpty()}" class="aviso">
+        Você ainda não tem transações no extrato.
+    </p>
+
+    <a class="botao-secundario" href="/alunos/perfil">Voltar ao perfil</a>
+</div>
+</body>
+</html>

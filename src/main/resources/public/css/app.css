@@ -181,3 +181,138 @@ footer {
     font-size: 0.85rem;
     padding: 2rem 1rem;
 }
+
+.muted {
+    color: var(--cor-texto-fraco);
+    font-size: 0.95rem;
+    margin: 1rem 0;
+}
+
+.dados-saldo {
+    background: #eff6ff;
+    border-left: 4px solid var(--cor-secundaria);
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+}
+
+.acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    align-items: center;
+}
+
+form textarea {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.25rem;
+    border: 1px solid var(--cor-borda);
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: inherit;
+}
+form textarea:focus {
+    outline: 2px solid var(--cor-secundaria);
+    outline-offset: -1px;
+    border-color: transparent;
+}
+
+.tabela-extrato {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+}
+.tabela-extrato th, .tabela-extrato td {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--cor-borda);
+    vertical-align: top;
+}
+.tabela-extrato th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: var(--cor-texto-fraco);
+}
+.tabela-extrato tr:last-child td { border-bottom: none; }
+
+.valor-positivo { color: var(--cor-sucesso); font-weight: 600; }
+.valor-negativo { color: var(--cor-erro); font-weight: 600; }
+
+.status-ok    { color: var(--cor-sucesso); font-weight: 600; }
+.status-falha { color: var(--cor-erro); font-weight: 600; }
+
+.corpo-notif {
+    margin: 0;
+    font-family: inherit;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    color: var(--cor-texto);
+}
+
+.lista-acoes {
+    padding-left: 1.25rem;
+    line-height: 2;
+}
+
+.form-conceder {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.galeria-vantagens {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+.card-vantagem {
+    border: 1px solid var(--cor-borda);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+}
+.card-vantagem img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    display: block;
+    background: #f3f4f6;
+}
+.card-vantagem .corpo {
+    padding: 0.75rem;
+}
+.card-vantagem h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: var(--cor-primaria);
+}
+.card-vantagem .custo {
+    font-weight: 600;
+    color: var(--cor-secundaria);
+    margin: 0.25rem 0;
+}
+.card-vantagem .empresa {
+    font-size: 0.85rem;
+    color: var(--cor-texto-fraco);
+}
+
+.filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: end;
+    margin: 1rem 0 1.5rem 0;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 4px;
+}
+.filtros label { margin: 0; flex: 1 1 200px; }
+.filtros button { margin-top: 0.25rem; }

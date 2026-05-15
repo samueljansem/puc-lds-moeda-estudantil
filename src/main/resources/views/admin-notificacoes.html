@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Caixa Global de Notificações</h1>
+
+    <p class="muted">
+        Todas as notificações enviadas pelo sistema (notificações de moedas,
+        cupons de resgate, recuperação de senha, etc).
+    </p>
+
+    <table class="tabela-extrato" th:if="${!notificacoes.isEmpty()}">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Destinatário</th>
+                <th>Assunto</th>
+                <th>Status</th>
+                <th>Código</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="n : ${notificacoes}">
+                <td th:text="${#temporals.format(n.criadaEm, 'dd/MM/yyyy HH:mm')}">—</td>
+                <td th:text="${n.destinatario}">—</td>
+                <td th:text="${n.assunto}">—</td>
+                <td th:text="${n.status}"
+                    th:class="${n.status.name() == 'ENVIADA'} ? 'status-ok' : 'status-falha'">—</td>
+                <td th:text="${n.codigoReferencia != null} ? ${n.codigoReferencia} : '—'">—</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p th:if="${notificacoes.isEmpty()}" class="aviso">
+        Nenhuma notificação enviada ainda.
+    </p>
+
+    <a class="botao-secundario" href="/admin/inicio">Voltar</a>
+</div>
+</body>
+</html>

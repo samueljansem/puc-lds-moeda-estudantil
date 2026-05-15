@@ -16,7 +16,11 @@
         <dt>Saldo de moedas</dt><dd th:text="${aluno.saldo}"></dd>
     </dl>
 
-    <a class="botao" href="/alunos/editar">Editar perfil</a>
+    <div class="acoes">
+        <a class="botao" href="/alunos/extrato">Ver extrato</a>
+        <a class="botao-secundario" href="/alunos/editar">Editar perfil</a>
+        <a class="botao-secundario" href="/notificacoes">Notificações</a>
+    </div>
 </div>
 </body>
 </html>

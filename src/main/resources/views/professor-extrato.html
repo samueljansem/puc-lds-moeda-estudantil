@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Meu Extrato</h1>
+
+    <p th:if="${sucesso}" class="alerta-sucesso">
+        Transferência realizada com sucesso.
+    </p>
+
+    <p class="dados-saldo">
+        Saldo atual: <strong th:text="${professor.saldo}">0</strong> moedas.
+    </p>
+
+    <table class="tabela-extrato" th:if="${!linhas.isEmpty()}">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Destinatário</th>
+                <th>Valor</th>
+                <th>Motivo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="l : ${linhas}">
+                <td th:text="${#temporals.format(l.data(), 'dd/MM/yyyy HH:mm')}">—</td>
+                <td th:text="${l.descricao()}">—</td>
+                <td th:text="${l.valor()}" class="valor-negativo">0</td>
+                <td th:text="${l.referencia()}">—</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p th:if="${linhas.isEmpty()}" class="aviso">
+        Você ainda não realizou transferências.
+    </p>
+
+    <div class="acoes">
+        <a class="botao" href="/professores/transferir">Nova transferência</a>
+        <a class="botao-secundario" href="/professores/perfil">Voltar ao perfil</a>
+    </div>
+</div>
+</body>
+</html>

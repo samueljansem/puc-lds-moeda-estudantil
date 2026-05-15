@@ -4,6 +4,7 @@ import br.puc.moedaestudantil.model.Aluno;
 import io.micronaut.data.annotation.Repository;
 import io.micronaut.data.repository.CrudRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,4 +19,6 @@ public interface AlunoDAO extends CrudRepository<Aluno, Long> {
     boolean existsByCpf(String cpf);
 
     boolean existsByEmail(String email);
+
+    List<Aluno> findByInstituicaoIdOrderByNome(Long instituicaoId);
 }
