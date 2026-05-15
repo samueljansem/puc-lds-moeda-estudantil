@@ -1,15 +1,12 @@
 @startuml er
 ' Modelo ER (lógico, IE/Crow's Foot) — Sistema de Moeda Estudantil
-' Lab03S02. Reflete a herança JPA JOINED da hierarquia Usuario:
-' tabela "usuario" (pai) + tabelas filhas (aluno, professor, empresa_parceira)
-' com PK que também é FK para usuario.id.
+' Lab03S03 final. Schema implementado em V1, V2, V3 (Lab03S02) +
+' V4, V5 (Lab03S03). Reflete a herança JPA JOINED.
 
 skinparam shadowing false
 skinparam linetype ortho
 hide circle
 title Modelo ER — Sistema de Moeda Estudantil
-
-' === Tabelas implementadas em Lab03S02 ===
 
 entity "usuario" as usuario #LightYellow {
   *id : bigint <<PK>>
@@ -18,7 +15,7 @@ entity "usuario" as usuario #LightYellow {
   *email : varchar(120) <<unique>>
   *credencial_id : bigint <<FK>>
   *tipo : varchar(20) <<discriminator>>
-  ' tipo ∈ {ALUNO, PROFESSOR, EMPRESA_PARCEIRA}
+  *ativo : boolean DEFAULT TRUE
 }
 
 entity "aluno" as aluno #LightYellow {
@@ -29,16 +26,16 @@ entity "aluno" as aluno #LightYellow {
   *endereco : varchar(255)
   *curso : varchar(120)
   *instituicao_id : bigint <<FK>>
-  *saldo : int  ' default 0; CHECK saldo >= 0
+  *saldo : int
 }
 
-entity "professor" as professor #LightCyan {
+entity "professor" as professor #LightYellow {
   *id : bigint <<PK, FK→usuario.id>>
   --
   *cpf : varchar(11) <<unique>>
   *departamento : varchar(120)
   *instituicao_id : bigint <<FK>>
-  *saldo : int  ' default 0; CHECK saldo >= 0
+  *saldo : int
 }
 
 entity "empresa_parceira" as empresa #LightYellow {
@@ -61,102 +58,109 @@ entity "instituicao" as instituicao #LightYellow {
   *nome : varchar(120) <<unique>>
 }
 
-' === Tabelas para Lab03S03 ===
-
-entity "vantagem" as vantagem #LightCyan {
+entity "vantagem" as vantagem #LightYellow {
   *id : bigint <<PK>>
   --
   *empresa_id : bigint <<FK>>
-  *descricao : varchar(255)
-  *foto_url : varchar(255)
-  *custo : int  ' CHECK custo > 0
-  *disponivel : boolean
+  *descricao : varchar(500)
+  *custo : int
+  foto : BLOB
+  foto_content_type : varchar(50)
+  *ativa : boolean DEFAULT TRUE
+  *criada_em : timestamp
 }
 
-entity "transacao" as transacao #LightCyan {
+entity "transferencia_moeda" as transferencia #LightYellow {
   *id : bigint <<PK>>
   --
-  *tipo : varchar(20)  ' TRANSFERENCIA | RESGATE
-  *data : timestamp
-  *valor : int  ' CHECK valor > 0
+  *professor_id : bigint <<FK>>
   *aluno_id : bigint <<FK>>
-  professor_id : bigint <<FK, nullable>>
-  vantagem_id : bigint <<FK, nullable>>
-  empresa_id : bigint <<FK, nullable>>
-  motivo : varchar(500) <<nullable>>
-  codigo_verificacao : varchar(40) <<unique, nullable>>
-}
-
-entity "notificacao" as notificacao #LightCyan {
-  *id : bigint <<PK>>
-  --
-  *destinatario_email : varchar(120)
-  *assunto : varchar(255)
-  *corpo : text
-  *data_envio : timestamp
-  *status_entrega : varchar(20)
-  ' PENDENTE | ENTREGUE | FALHA
-  transacao_id : bigint <<FK, nullable>>
-}
-
-entity "linha_extrato" as linha_extrato #LightCyan {
-  *id : bigint <<PK>>
-  --
-  *extrato_id : bigint <<FK>>
-  *data : timestamp
-  *descricao : varchar(255)
   *valor : int
-  *tipo : varchar(20)
+  *motivo : varchar(500)
+  *realizada_em : timestamp
 }
 
-' === Relacionamentos ===
+entity "resgate" as resgate #LightYellow {
+  *id : bigint <<PK>>
+  --
+  *aluno_id : bigint <<FK>>
+  *vantagem_id : bigint <<FK>>
+  *custo : int
+  *codigo : varchar(36) <<unique>>
+  *realizado_em : timestamp
+}
+
+entity "notificacao" as notificacao #LightYellow {
+  *id : bigint <<PK>>
+  --
+  *destinatario : varchar(120)
+  *assunto : varchar(255)
+  *corpo : varchar(2000)
+  *status : varchar(20)
+  codigo_referencia : varchar(36)
+  *criada_em : timestamp
+}
+
+entity "token_recuperacao" as token #LightYellow {
+  *id : bigint <<PK>>
+  --
+  *credencial_id : bigint <<FK>>
+  *token : varchar(64) <<unique>>
+  *expira_em : timestamp
+  *usado : boolean DEFAULT FALSE
+  *criado_em : timestamp
+}
 
 ' Herança JOINED: PK das filhas é FK para usuario
 usuario ||--o| aluno              : "is-a"
 usuario ||--o| professor          : "is-a"
 usuario ||--o| empresa            : "is-a"
 
-' Cada usuario tem uma credencial (1:1)
-credencial ||--|| usuario         : "autentica"
+' Credencial 1:1 com Usuario (admin é credencial sem usuario)
+credencial ||--o| usuario         : "autentica"
 
 ' Instituicao agrega alunos e professores
 instituicao ||--o{ aluno          : "tem"
 instituicao ||--o{ professor      : "tem"
 
-' Empresa oferece vantagens (Sprint 3)
+' Empresa oferece vantagens
 empresa ||--o{ vantagem           : "oferece"
 
-' Transações envolvem aluno (sempre) e professor/vantagem/empresa (conforme tipo)
-aluno ||--o{ transacao            : "envolve"
-professor ||--o{ transacao        : "origem"
-vantagem ||--o{ transacao         : "destino"
-empresa ||--o{ transacao          : "parceiro"
+' Transferência: professor → aluno
+professor ||--o{ transferencia    : "origem"
+aluno     ||--o{ transferencia    : "destinatário"
 
-' Notificações geradas por transações
-transacao ||--o{ notificacao      : "dispara"
+' Resgate: aluno → vantagem
+aluno    ||--o{ resgate           : "por"
+vantagem ||--o{ resgate           : "de"
 
-' Linhas de extrato compostas por transações
-transacao ||--o{ linha_extrato    : "deriva"
+' Token de recuperação pertence a uma credencial
+credencial ||--o{ token           : "gera"
 
 legend right
-  |= Cor      |= Significado                       |
-  | Amarelo   | Implementado em Lab03S02 (V1)      |
-  | Ciano     | Reservado para Lab03S03 (V3+)      |
+  |= Cor      |= Significado                                          |
+  | Amarelo   | Implementado (V1–V5 Flyway, todas as etapas)          |
 endlegend
 
 note bottom
   **Estratégia ORM**: Micronaut Data JPA + Hibernate.
-  **Herança**: JPA JOINED — tabela `usuario` + tabelas filhas
-  com PK = FK para `usuario.id`.
+  **Herança**: JPA JOINED — tabela `usuario` (pai) + tabelas
+  filhas (aluno, professor, empresa_parceira) com PK = FK para
+  `usuario.id`.
   **Migrations**: Flyway versionado em
   `src/main/resources/db/migration/`.
 
-  Lab03S02 (V1__create_schema.sql + V2__seed_instituicoes.sql)
-  cria 5 tabelas: usuario, aluno, empresa_parceira, credencial,
-  instituicao. As demais entram em migrations da Lab03S03.
+  V1 schema base + V2 instituições + V3 demo (Lab03S02)
+  V4 lab03s03_schema + V5 seed_lab03s03_demo (Lab03S03)
 
-  CHECKs `saldo >= 0`, `custo > 0`, `valor > 0` e a unicidade de
-  `codigo_verificacao` ficam expressos no schema.
+  Admin vive apenas em `credencial` (`tipo_ator='ADMIN'`); não
+  tem linha em `usuario` (não há subclasse para ele).
+
+  Notificacao é o **outbox** da aplicação: cada "e-mail" enviado
+  pelo sistema vira uma linha, sem dependência de SMTP.
+
+  CHECKs `saldo >= 0`, `custo > 0`, `valor > 0` e a unicidade
+  de `resgate.codigo` ficam expressos no schema.
 end note
 
 @enduml

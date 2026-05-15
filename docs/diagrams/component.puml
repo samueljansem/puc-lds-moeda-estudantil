@@ -1,162 +1,204 @@
 @startuml component
-' Diagrama de Componentes — Sistema de Moeda Estudantil (Lab03S01)
-' Fonte: plan.md (estrutura MVC), contracts/api-overview.md (superfície HTTP)
-' Frontend Thymeleaf server-rendered (Lab03S02): comunicação Cliente↔Controlador
-' usa HTTP+HTML (form-encoded), não JSON.
+' Diagrama de Componentes — Sistema de Moeda Estudantil (Lab03S03 final)
+' Reflete a arquitetura MVC implementada: navegador Thymeleaf →
+' controllers Micronaut → serviços → DAOs (Micronaut Data JPA) → H2.
+' Notificação é interna (outbox em tabela), sem SMTP externo.
 
 skinparam shadowing false
 skinparam componentStyle rectangle
 title Diagrama de Componentes — Sistema de Moeda Estudantil
 
-actor "Aluno / Professor /\nEmpresa Parceira" as Usuario
+actor "Aluno / Professor /\nEmpresa / Admin" as Usuario
 
 node "Navegador" {
-  [Cliente Web\n(Thymeleaf, pt-BR)] as ClienteWeb
+  [Cliente Web\n(HTML + Thymeleaf, pt-BR)] as ClienteWeb
 }
 
 package "Aplicação Micronaut (Java 21)" {
 
   package "Controladores (MVC: C)" {
-    [ControleAutenticacao]
-    [ControleAluno]
-    [ControleProfessor]
-    [ControleEmpresaParceira]
-    [ControleVantagem]
-    [ControleTransacao]
-    [ControleExtrato]
+    [LoginController]
+    [LogoutController]
+    [HomeController]
+    [AlunoController]
+    [ProfessorController]
+    [EmpresaParceiraController]
+    [VantagemController]
+    [CatalogoController]
+    [FotoVantagemController]
+    [NotificacaoController]
+    [AdminController]
+    [TrocaSenhaController]
+    [RecuperacaoSenhaController]
   }
 
   package "Serviços" {
     [ServicoAutenticacao]
     [ServicoCadastro]
-    [ServicoTransferencia]
+    [ServicoMoeda]
+    [ServicoVantagem]
     [ServicoResgate]
-    [ServicoExtrato]
+    [ServicoSemestre]
     [ServicoNotificacao]
+    [ServicoRecuperacaoSenha]
   }
 
   package "DAOs (Padrão DAO via Micronaut Data JPA)" {
     [AlunoDAO]
     [ProfessorDAO]
     [EmpresaParceiraDAO]
+    [UsuarioDAO]
     [InstituicaoDAO]
     [VantagemDAO]
-    [TransacaoDAO]
+    [TransferenciaMoedaDAO]
+    [ResgateDAO]
+    [NotificacaoDAO]
+    [TokenRecuperacaoDAO]
     [CredencialDAO]
   }
 
-  package "Modelos (MVC: M)" {
-    [Usuario] as MUsuario
-    [Aluno] as MAluno
-    [Professor] as MProfessor
-    [Instituicao] as MInstituicao
-    [EmpresaParceira] as MEmpresa
-    [Vantagem] as MVantagem
-    [Transacao] as MTransacao
-    [Notificacao] as MNotificacao
-    [Credencial] as MCredencial
+  package "Views (MVC: V — Thymeleaf)" {
+    [Templates HTML\n(layout, aluno-*, empresa-*,\nprofessor-*, admin-*, etc.)] as Views
   }
 
 }
 
-database "Banco H2 (file mode)\n(Lab03S02)" as BD
-cloud "Provedor de E-mail\n(SMTP — Lab03S03)" as Email
+database "Banco H2 (file mode)\n./data/moedaestudantil.mv.db" as BD
 
-' === Interfaces fornecidas (lollipop) e requeridas (socket) ===
-
-' IApiHttp — exposta pela camada de Controladores, consumida pelo Cliente Web
+' === IApiHttp — fornecida pelos controladores, requerida pelo Cliente Web ===
 interface "IApiHttp"        as IApiHttp
-ControleAutenticacao    -up- IApiHttp
-ControleAluno           -up- IApiHttp
-ControleProfessor       -up- IApiHttp
-ControleEmpresaParceira -up- IApiHttp
-ControleVantagem        -up- IApiHttp
-ControleTransacao       -up- IApiHttp
-ControleExtrato         -up- IApiHttp
-ClienteWeb              )-- IApiHttp : "HTTP+HTML\n(form-encoded)"
+LoginController              -up- IApiHttp
+LogoutController             -up- IApiHttp
+HomeController               -up- IApiHttp
+AlunoController              -up- IApiHttp
+ProfessorController          -up- IApiHttp
+EmpresaParceiraController    -up- IApiHttp
+VantagemController           -up- IApiHttp
+CatalogoController           -up- IApiHttp
+FotoVantagemController       -up- IApiHttp
+NotificacaoController        -up- IApiHttp
+AdminController              -up- IApiHttp
+TrocaSenhaController         -up- IApiHttp
+RecuperacaoSenhaController   -up- IApiHttp
 
-' Interfaces de serviço (uma por serviço) — fornecidas pelos serviços, requeridas pelos controladores
-interface "IServicoAuth"        as ISvcAuth
-interface "IServicoCadastro"    as ISvcCad
-interface "IServicoTransfer"    as ISvcTrf
-interface "IServicoResgate"     as ISvcRsg
-interface "IServicoExtrato"     as ISvcExt
-interface "IServicoNotif"       as ISvcNot
+ClienteWeb )-- IApiHttp : "HTTP+HTML\n(form-encoded / multipart)"
+Usuario --> ClienteWeb
 
-ServicoAutenticacao  -up- ISvcAuth
-ServicoCadastro      -up- ISvcCad
-ServicoTransferencia -up- ISvcTrf
-ServicoResgate       -up- ISvcRsg
-ServicoExtrato       -up- ISvcExt
-ServicoNotificacao   -up- ISvcNot
+' === Interfaces de serviço — fornecidas pelos serviços ===
+interface "IAuth"      as ISvcAuth
+interface "ICadastro"  as ISvcCad
+interface "IMoeda"     as ISvcMoeda
+interface "IVantagem"  as ISvcVant
+interface "IResgate"   as ISvcRsg
+interface "ISemestre"  as ISvcSem
+interface "INotif"     as ISvcNot
+interface "IRecSenha"  as ISvcRec
 
-ControleAutenticacao    )-- ISvcAuth : Java\n(in-process)
-ControleAluno           )-- ISvcCad  : Java\n(in-process)
-ControleEmpresaParceira )-- ISvcCad
-ControleVantagem        )-- ISvcCad
-ControleTransacao       )-- ISvcTrf
-ControleTransacao       )-- ISvcRsg
-ControleExtrato         )-- ISvcExt
+ServicoAutenticacao         -up- ISvcAuth
+ServicoCadastro             -up- ISvcCad
+ServicoMoeda                -up- ISvcMoeda
+ServicoVantagem             -up- ISvcVant
+ServicoResgate              -up- ISvcRsg
+ServicoSemestre             -up- ISvcSem
+ServicoNotificacao          -up- ISvcNot
+ServicoRecuperacaoSenha     -up- ISvcRec
 
-' Serviço → Serviço (notificação acionada por transferências/resgates)
-ServicoTransferencia    )-- ISvcNot : "notifica aluno"
-ServicoResgate          )-- ISvcNot : "envia cupom +\nconfirmação"
+' Controladores → Serviços (Java in-process)
+LoginController            )-- ISvcAuth
+AlunoController            )-- ISvcCad
+EmpresaParceiraController  )-- ISvcCad
+ProfessorController        )-- ISvcMoeda
+ProfessorController        )-- ISvcCad
+VantagemController         )-- ISvcVant
+CatalogoController         )-- ISvcRsg
+CatalogoController         )-- ISvcVant
+AdminController            )-- ISvcSem
+TrocaSenhaController       )-- ISvcCad
+RecuperacaoSenhaController )-- ISvcRec
 
-' IRepositorio — interface única fornecida por todos os DAOs, requerida pelos serviços
+' Serviços → Serviço de notificação (outbox)
+ServicoMoeda             )-- ISvcNot : "notifica aluno"
+ServicoResgate           )-- ISvcNot : "cupom + confirmação"
+ServicoRecuperacaoSenha  )-- ISvcNot : "link reset"
+
+' === IRepositorio — fornecida por todos os DAOs ===
 interface "IRepositorio<T>" as IRepo
 
-AlunoDAO            -up- IRepo
-ProfessorDAO        -up- IRepo
-EmpresaParceiraDAO  -up- IRepo
-InstituicaoDAO      -up- IRepo
-VantagemDAO         -up- IRepo
-TransacaoDAO        -up- IRepo
-CredencialDAO       -up- IRepo
+AlunoDAO              -up- IRepo
+ProfessorDAO          -up- IRepo
+EmpresaParceiraDAO    -up- IRepo
+UsuarioDAO            -up- IRepo
+InstituicaoDAO        -up- IRepo
+VantagemDAO           -up- IRepo
+TransferenciaMoedaDAO -up- IRepo
+ResgateDAO            -up- IRepo
+NotificacaoDAO        -up- IRepo
+TokenRecuperacaoDAO   -up- IRepo
+CredencialDAO         -up- IRepo
 
-ServicoAutenticacao  )-- IRepo : Java\n(in-process)
-ServicoCadastro      )-- IRepo
-ServicoTransferencia )-- IRepo
-ServicoResgate       )-- IRepo
-ServicoExtrato       )-- IRepo
+ServicoAutenticacao         )-- IRepo
+ServicoCadastro             )-- IRepo
+ServicoMoeda                )-- IRepo
+ServicoVantagem             )-- IRepo
+ServicoResgate              )-- IRepo
+ServicoSemestre             )-- IRepo
+ServicoNotificacao          )-- IRepo
+ServicoRecuperacaoSenha     )-- IRepo
 
-' IBanco (JDBC) — fornecida pelo banco, requerida pelos DAOs
+' Controladores que leem DAO diretamente
+NotificacaoController  )-- IRepo
+FotoVantagemController )-- IRepo
+AdminController        )-- IRepo
+
+' === IBanco (JDBC) — fornecida pelo H2, requerida pelos DAOs ===
 interface "IBanco (JDBC)" as IBanco
 BD -up- IBanco
-AlunoDAO           )-- IBanco : "JDBC/TCP"
-ProfessorDAO       )-- IBanco
-EmpresaParceiraDAO )-- IBanco
-InstituicaoDAO     )-- IBanco
-VantagemDAO        )-- IBanco
-TransacaoDAO       )-- IBanco
-CredencialDAO      )-- IBanco
+AlunoDAO              )-- IBanco : "JDBC/TCP\n(in-process)"
+ProfessorDAO          )-- IBanco
+EmpresaParceiraDAO    )-- IBanco
+UsuarioDAO            )-- IBanco
+InstituicaoDAO        )-- IBanco
+VantagemDAO           )-- IBanco
+TransferenciaMoedaDAO )-- IBanco
+ResgateDAO            )-- IBanco
+NotificacaoDAO        )-- IBanco
+TokenRecuperacaoDAO   )-- IBanco
+CredencialDAO         )-- IBanco
 
-' IEmail (SMTP) — fornecida pelo provedor externo, requerida pelo ServicoNotificacao
-interface "IEmail (SMTP)" as IEmail
-Email -up- IEmail
-ServicoNotificacao )-- IEmail : "SMTP/TCP"
+' Controllers → Views (template engine acionado pelo Micronaut)
+LoginController              .-> Views
+HomeController               .-> Views
+AlunoController              .-> Views
+ProfessorController          .-> Views
+EmpresaParceiraController    .-> Views
+VantagemController           .-> Views
+CatalogoController           .-> Views
+NotificacaoController        .-> Views
+AdminController              .-> Views
+TrocaSenhaController         .-> Views
+RecuperacaoSenhaController   .-> Views
 
-' === Pareamento DAO ↔ Modelo (omitido visualmente; é trivial pelos nomes) ===
-' AlunoDAO ↔ Aluno, ProfessorDAO ↔ Professor, etc.
+note top of IApiHttp
+  HTTP + HTML — server-rendered.
+  Sem REST/JSON. Forms application/
+  x-www-form-urlencoded; upload de
+  foto via multipart/form-data.
+end note
 
 note right of ServicoNotificacao
-  Provedor SMTP concreto (SendGrid,
-  Mailgun, SMTP nativo) decidido em
-  Lab03S03. Em Lab03S02 o serviço
-  apenas registra Notificacao no banco.
+  Outbox interno: persiste cada
+  "envio" como linha em `notificacao`.
+  Sem SMTP externo (decisão de Fase 2
+  para simplificar demo).
+  US12 (falha de entrega) seria
+  modelada com status=FALHA.
 end note
 
 note bottom of BD
-  H2 em modo arquivo (jdbc:h2:./data/...)
-  Migrations versionadas via Flyway.
-  Schema reflete herança JPA JOINED
-  da hierarquia Usuario.
-end note
-
-note top of IApiHttp
-  Comunicação Cliente↔Controlador é
-  HTTP+HTML form-encoded (Thymeleaf
-  server-rendered). Não há REST/JSON
-  no escopo do Lab03S02.
+  H2 em modo arquivo:
+  `jdbc:h2:./data/moedaestudantil`.
+  Migrations versionadas via Flyway
+  (V1 schema → V5 seed Lab03S03).
 end note
 
 note top of IRepo

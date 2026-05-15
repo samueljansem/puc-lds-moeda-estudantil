@@ -1,7 +1,7 @@
 @startuml use-case
-' Diagrama de Casos de Uso — Sistema de Moeda Estudantil (Lab03S01)
-' Fonte: spec.md (US1–US5) + user-stories.md (US6–US12)
-' Códigos C01..C19 para referência cruzada com requisitos.
+' Diagrama de Casos de Uso — Sistema de Moeda Estudantil (Lab03S03 final)
+' Fonte: user-stories.md (US1–US12) + implementação realizada nas Fases 1–4.
+' Códigos C01..C23 para referência cruzada com requisitos.
 
 left to right direction
 skinparam packageStyle rectangle
@@ -11,6 +11,7 @@ title Diagrama de Casos de Uso — Sistema de Moeda Estudantil
 actor "Aluno"            as Aluno
 actor "Professor"        as Professor
 actor "Empresa Parceira" as Empresa
+actor "Admin"            as Admin
 
 rectangle "Sistema de Moeda Estudantil" {
   ' Casos de uso originais (US1–US5)
@@ -26,7 +27,7 @@ rectangle "Sistema de Moeda Estudantil" {
   usecase "C10\nResgatar vantagem"                                  as UC_ResgatarVantagem
   usecase "C11\nReceber cupom por e-mail\ncom código de verificação" as UC_ReceberCupom
 
-  ' Casos de uso novos (US6–US12)
+  ' Casos de uso US6–US12
   usecase "C12\nEditar dados do perfil"           as UC_EditarPerfil
   usecase "C13\nRecuperar senha"                  as UC_RecuperarSenha
   usecase "C14\nEditar vantagem"                  as UC_EditarVantagem
@@ -35,6 +36,12 @@ rectangle "Sistema de Moeda Estudantil" {
   usecase "C17\nListar alunos da instituição"     as UC_ListarAlunos
   usecase "C18\nConsultar cupons emitidos"        as UC_ConsultarCupons
   usecase "C19\nNotificar falha de entrega"       as UC_NotificarFalha
+
+  ' Casos de uso introduzidos na Lab03S03
+  usecase "C20\nConceder semestre\n(1.000 moedas a cada professor)" as UC_ConcederSemestre
+  usecase "C21\nTrocar senha (autenticado)"                         as UC_TrocarSenha
+  usecase "C22\nDesativar a própria conta"                          as UC_DesativarConta
+  usecase "C23\nConsultar notificações"                             as UC_ConsultarNotificacoes
 }
 
 ' Aluno
@@ -46,27 +53,48 @@ Aluno --> UC_ConsultarCatalogo
 Aluno --> UC_ResgatarVantagem
 Aluno --> UC_ReceberCupom
 Aluno --> UC_EditarPerfil
+Aluno --> UC_RecuperarSenha
+Aluno --> UC_TrocarSenha
+Aluno --> UC_DesativarConta
+Aluno --> UC_ConsultarNotificacoes
+Aluno --> UC_ConsultarCupons
 
 ' Professor
 Professor --> UC_Autenticar
 Professor --> UC_EnviarMoedas
 Professor --> UC_ConsultarExtrato
 Professor --> UC_EditarPerfil
+Professor --> UC_ListarAlunos
+Professor --> UC_TrocarSenha
+Professor --> UC_ConsultarNotificacoes
 
 ' Empresa Parceira
 Empresa --> UC_CadastrarEmpresa
 Empresa --> UC_Autenticar
 Empresa --> UC_CadastrarVantagem
+Empresa --> UC_EditarVantagem
+Empresa --> UC_DesativarVantagem
 Empresa --> UC_ReceberConfirmacao
 Empresa --> UC_EditarPerfil
+Empresa --> UC_RecuperarSenha
+Empresa --> UC_TrocarSenha
+Empresa --> UC_DesativarConta
+Empresa --> UC_ConsultarNotificacoes
 
-' Dependências entre casos de uso — <<include>> (sempre executado)
+' Admin
+Admin --> UC_Autenticar
+Admin --> UC_ConcederSemestre
+Admin --> UC_ConsultarNotificacoes
+
+' Dependências — <<include>> (sempre executado)
 UC_EnviarMoedas      ..> UC_ReceberNotificacao : <<include>>
 UC_ResgatarVantagem  ..> UC_ReceberCupom       : <<include>>
 UC_ResgatarVantagem  ..> UC_ReceberConfirmacao : <<include>>
 
-' Dependências entre casos de uso — <<extend>> (opcional/condicional)
+' Dependências — <<extend>> (opcional/condicional)
 UC_RecuperarSenha    ..> UC_Autenticar         : <<extend>>
+UC_TrocarSenha       ..> UC_Autenticar         : <<extend>>
+UC_DesativarConta    ..> UC_Autenticar         : <<extend>>
 UC_EditarVantagem    ..> UC_CadastrarVantagem  : <<extend>>
 UC_DesativarVantagem ..> UC_CadastrarVantagem  : <<extend>>
 UC_FiltrarCatalogo   ..> UC_ConsultarCatalogo  : <<extend>>
@@ -81,7 +109,13 @@ end note
 
 note bottom of UC_ResgatarVantagem
   Pré-condição: saldo do aluno ≥ custo
-  e vantagem disponível (FR-010).
+  e vantagem ativa (FR-010).
+end note
+
+note bottom of UC_ConcederSemestre
+  Acumula sobre o saldo atual (FR-004,
+  não zera). Disparada manualmente
+  pelo Admin no início de cada semestre.
 end note
 
 @enduml

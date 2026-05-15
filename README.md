@@ -19,7 +19,7 @@ Software** (PUC Minas, 2026/1) — Lab03.
 ![Hibernate](https://img.shields.io/badge/Hibernate-6.6-007ec6?style=for-the-badge&logo=hibernate&logoColor=white)
 ![Flyway](https://img.shields.io/badge/Flyway-%E2%9C%93-007ec6?style=for-the-badge&logo=flyway&logoColor=white)
 ![H2](https://img.shields.io/badge/H2-2.3-007ec6?style=for-the-badge&logo=h2&logoColor=white)
-![Sprint](https://img.shields.io/badge/Sprint-Lab03S02-blue?style=for-the-badge)
+![Sprint](https://img.shields.io/badge/Sprint-Lab03S03%20%E2%9C%93-success?style=for-the-badge)
 
 ---
 
@@ -54,10 +54,10 @@ através de uma moeda virtual.
 - **Contexto:** Trabalho da disciplina **Laboratório de Desenvolvimento de
   Software** (LDS) — PUC Minas, 2026/1.
 
-> **Sprint atual:** Lab03S02 — Modelo ER, estratégia de persistência e CRUDs
-> de Aluno e Empresa Parceira (versão inicial). Os fluxos de transferência de
-> moedas, resgate de vantagens e notificação por e-mail são entregues em
-> Lab03S03.
+> **Sprint atual:** Lab03S03 — ciclo completo de moeda implementado:
+> transferência Professor→Aluno, catálogo + resgate por cupom,
+> notificações (outbox interno em pt-BR), recuperação de senha e
+> CRUDs finais.
 
 ---
 
@@ -65,26 +65,47 @@ através de uma moeda virtual.
 
 ### Lab03S02 (entregue)
 
-- 🔐 **Autenticação por sessão** — login e logout para Alunos e Empresas
-  Parceiras (Micronaut Security + cookie de sessão; senha hashed com BCrypt).
+- 🔐 **Autenticação por sessão** — login e logout (Micronaut Security +
+  cookie de sessão; BCrypt cost 12).
 - 👤 **CRUD de Aluno** — cadastro público, visualização e edição de perfil
-  (e-mail, endereço, curso). CPF/RG são imutáveis após o cadastro.
-- 🏢 **CRUD de Empresa Parceira** — cadastro público, visualização e edição de
-  perfil (nome, e-mail). CNPJ é imutável.
-- 🛡️ **Validações** — formato de CPF (11 dígitos), CNPJ (14 dígitos) e e-mail;
-  unicidade de CPF, CNPJ, e-mail e login (FR-014).
-- 🇧🇷 **pt-BR em todo lugar** — rótulos, mensagens de validação e mensagens de
-  erro em português brasileiro (FR-013).
+  (e-mail, endereço, curso). CPF/RG imutáveis após o cadastro.
+- 🏢 **CRUD de Empresa Parceira** — cadastro público, visualização e edição
+  de perfil (nome, e-mail). CNPJ imutável.
+- 🛡️ **Validações** — formato de CPF (11 dígitos), CNPJ (14 dígitos),
+  e-mail; unicidade de CPF, CNPJ, e-mail e login (FR-014).
+- 🇧🇷 **pt-BR em todo lugar** — rótulos, mensagens, erros e e-mails (FR-013).
 
-### Lab03S03 (planejado)
+### Lab03S03 (entregue)
 
-- Transferência de moedas Professor → Aluno (com motivo obrigatório)
-- Cadastro/edição/desativação de Vantagens pela Empresa Parceira
-- Resgate de Vantagem pelo Aluno (com cupom + código de verificação por e-mail)
-- Notificação por e-mail
-- Recuperação de senha
-- Listagem de alunos por instituição
-- Filtro de catálogo de vantagens
+- 🧑‍🏫 **Cadastro do Professor** via seed Flyway (FR-003 — instituição envia
+  o roster, professor não se auto-cadastra). Login `demo.professor`.
+- 💰 **Transferência de moedas** Professor → Aluno com motivo obrigatório
+  (US1 / FR-005, FR-006). Operação atômica: saldo do professor cai, saldo
+  do aluno sobe, transação é gravada e notificação para o aluno é
+  enviada — tudo numa transação JPA.
+- 🎟️ **Catálogo de Vantagens** com cards (foto via BLOB), filtros por
+  custo máximo e empresa (US9). Empresa parceira cadastra/edita/desativa
+  vantagens (US4 + US8) — vantagens desativadas saem do catálogo público
+  mas continuam visíveis no histórico dos alunos que já resgataram.
+- 🔖 **Resgate por cupom** (US5 / FR-011, FR-015): gera código UUID,
+  debita saldo do aluno, dispara duas notificações (cupom para o aluno
+  + confirmação para a empresa) com o mesmo código de verificação.
+- 📨 **Caixa de notificações** — outbox em tabela (`notificacao`). Cada
+  usuário vê suas em `/notificacoes`; admin vê todas em
+  `/admin/notificacoes`. Sem dependência de SMTP.
+- 🗂️ **Extrato consolidado** (US3): transferências recebidas + resgates,
+  ordenados por data.
+- 🛂 **Admin** (`demo.admin`): concede semestre — soma 1.000 moedas ao
+  saldo de cada professor, acumulando sobre o saldo atual (FR-004).
+- 🔑 **Recuperação de senha** (US7): tela pública `/recuperar-senha`,
+  token de uso único com TTL 1h, link enviado via notificação.
+- 🔁 **Trocar senha** (autenticado, todos os papéis) com confirmação da
+  senha atual.
+- ❌ **Desativar a própria conta** (soft delete em `usuario.ativo`) —
+  login subsequente é rejeitado com `USER_DISABLED`.
+- 👥 **Listagem de alunos por instituição** para o Professor (US10).
+- 📑 **Cupons emitidos** (US11): `/alunos/cupons` lista todos os
+  resgates feitos pelo aluno com data e código.
 
 ---
 
@@ -173,9 +194,11 @@ cd puc-lds-lab-03
 A aplicação fica disponível em **`http://localhost:8080`**.
 
 > [!NOTE]
-> O banco H2 é criado automaticamente em `./data/moedaestudantil.mv.db` no
-> primeiro `run`. As migrations Flyway aplicam o schema (`V1__create_schema.sql`)
-> e populam as instituições parceiras (`V2__seed_instituicoes.sql`).
+> O banco H2 é criado automaticamente em `./data/moedaestudantil.mv.db`
+> no primeiro `run`. As migrations Flyway aplicam: V1 schema base, V2
+> instituições, V3 seed Lab03S02 (aluno + empresa demo), V4 schema
+> Lab03S03 (professor, vantagem, transferência, resgate, notificação,
+> token), V5 seed Lab03S03 (admin + professor + 3 vantagens demo).
 
 ### Para zerar o banco
 
@@ -241,12 +264,14 @@ puc-lds-lab-03/
 
 > 📋 Roteiro completo passo a passo: **[DEMO.md](DEMO.md)**.
 
-### Credenciais de demo (já populadas pela migration `V3__seed_demo.sql`)
+### Credenciais de demo (populadas pelas migrations `V3` e `V5`)
 
-| Perfil  | Login           | Senha          | Após o login vai para |
-| ------- | --------------- | -------------- | --------------------- |
-| Aluno   | `demo.aluno`    | `aluno1234`    | `/alunos/perfil`      |
-| Empresa | `demo.empresa`  | `empresa1234`  | `/empresas/perfil`    |
+| Perfil    | Login             | Senha           | Após o login vai para     |
+| --------- | ----------------- | --------------- | ------------------------- |
+| Aluno     | `demo.aluno`      | `aluno1234`     | `/alunos/perfil`          |
+| Empresa   | `demo.empresa`    | `empresa1234`   | `/empresas/perfil`        |
+| Professor | `demo.professor`  | `prof1234`      | `/professores/perfil`     |
+| Admin     | `demo.admin`      | `admin1234`     | `/admin/inicio`           |
 
 ### Fluxo de cadastro e login (do zero)
 
@@ -283,16 +308,20 @@ INFO  io.micronaut.runtime.Micronaut - Startup completed in 1473ms. Server Runni
 
 Cobertura focada em invariantes críticas (não persegue % de cobertura):
 
-| Classe                          | Cobre                                                                  |
-| ------------------------------- | ---------------------------------------------------------------------- |
-| `AlunoDAOTest`                  | Unicidade de CPF e e-mail (FR-014) na persistência                     |
-| `EmpresaParceiraDAOTest`        | Unicidade de CNPJ                                                      |
-| `ServicoCadastroTest`           | Hash BCrypt da senha + rejeição de duplicatas (CPF, CNPJ, login)       |
-| `AlunoControllerTest`           | GET /cadastro público, POST sucesso (303), POST duplicado (form pt-BR) |
-| `EmpresaParceiraControllerTest` | Idem, fluxo de empresa                                                 |
-| `LoginControllerTest`           | Tela de login renderiza, mensagens pt-BR de erro/sucesso               |
+| Classe                          | Cobre                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------ |
+| `AlunoDAOTest`                  | Unicidade de CPF e e-mail (FR-014) na persistência                             |
+| `EmpresaParceiraDAOTest`        | Unicidade de CNPJ                                                              |
+| `ProfessorDAOTest`              | Seed V5 deixa demo.professor com saldo 1000 (FR-004); unicidade de CPF         |
+| `ServicoCadastroTest`           | Hash BCrypt da senha + rejeição de duplicatas (CPF, CNPJ, login)               |
+| `ServicoMoedaTest`              | Transferência: saldo insuficiente, motivo vazio, atomicidade, notificação      |
+| `ServicoResgateTest`            | Saldo insuficiente, vantagem desativada, código UUID único, filtro de catálogo |
+| `ServicoRecuperacaoSenhaTest`   | Token expirado/usado, troca de senha BCrypt verificável, senha curta           |
+| `AlunoControllerTest`           | GET /cadastro público, POST sucesso (303), POST duplicado (form pt-BR)         |
+| `EmpresaParceiraControllerTest` | Idem, fluxo de empresa                                                         |
+| `LoginControllerTest`           | Tela de login renderiza, mensagens pt-BR de erro/sucesso                       |
 
-Resultado esperado: **`BUILD SUCCESSFUL`**.
+Resultado esperado: **`BUILD SUCCESSFUL`** com ~30 testes.
 
 ---
 
