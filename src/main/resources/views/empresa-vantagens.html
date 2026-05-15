@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Minhas Vantagens</h1>
+
+    <p th:if="${sucesso == 'criada'}" class="alerta-sucesso">
+        Vantagem cadastrada com sucesso.
+    </p>
+    <p th:if="${sucesso == 'editada'}" class="alerta-sucesso">
+        Vantagem atualizada.
+    </p>
+    <p th:if="${sucesso == 'desativada'}" class="alerta-sucesso">
+        Vantagem desativada — não aparecerá mais no catálogo dos alunos.
+    </p>
+    <p th:if="${sucesso == 'ativada'}" class="alerta-sucesso">
+        Vantagem reativada.
+    </p>
+
+    <a class="botao" href="/empresas/vantagens/cadastrar">Cadastrar nova vantagem</a>
+    <a class="botao-secundario" href="/empresas/perfil">Voltar ao perfil</a>
+
+    <table class="tabela-extrato" th:if="${!vantagens.isEmpty()}" style="margin-top: 1.5rem;">
+        <thead>
+            <tr>
+                <th>Descrição</th>
+                <th>Custo</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="v : ${vantagens}">
+                <td th:text="${v.descricao}">—</td>
+                <td th:text="${v.custo + ' moedas'}">—</td>
+                <td th:text="${v.ativa} ? 'Ativa' : 'Desativada'"
+                    th:class="${v.ativa} ? 'status-ok' : 'status-falha'">—</td>
+                <td>
+                    <a th:href="@{|/empresas/vantagens/${v.id}/editar|}">Editar</a>
+                    <form th:if="${v.ativa}" th:action="@{|/empresas/vantagens/${v.id}/desativar|}"
+                          method="POST" style="display:inline">
+                        <button type="submit" class="link-acao">Desativar</button>
+                    </form>
+                    <form th:unless="${v.ativa}" th:action="@{|/empresas/vantagens/${v.id}/ativar|}"
+                          method="POST" style="display:inline">
+                        <button type="submit" class="link-acao">Reativar</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p th:if="${vantagens.isEmpty()}" class="aviso">
+        Você ainda não cadastrou vantagens. Clique em "Cadastrar nova vantagem".
+    </p>
+</div>
+</body>
+</html>

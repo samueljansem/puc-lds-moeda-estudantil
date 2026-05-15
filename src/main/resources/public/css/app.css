@@ -316,3 +316,23 @@ form textarea:focus {
 }
 .filtros label { margin: 0; flex: 1 1 200px; }
 .filtros button { margin-top: 0.25rem; }
+
+.link-acao {
+    background: transparent;
+    border: none;
+    color: var(--cor-secundaria);
+    cursor: pointer;
+    padding: 0;
+    margin-left: 0.5rem;
+    text-decoration: underline;
+    font-size: inherit;
+}
+.link-acao:hover { color: var(--cor-primaria); background: transparent; }
+
+code {
+    background: #f3f4f6;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.85rem;
+}

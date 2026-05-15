@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Catálogo de Vantagens</h1>
+
+    <p class="dados-saldo">
+        Seu saldo: <strong th:text="${aluno.saldo}">0</strong> moedas.
+    </p>
+
+    <p th:if="${erro == 'saldoInsuficiente'}" class="alerta-erro">
+        Saldo insuficiente para resgatar esta vantagem.
+    </p>
+    <p th:if="${erro == 'indisponivel'}" class="alerta-erro">
+        Vantagem indisponível (provavelmente foi desativada pela empresa).
+    </p>
+
+    <form action="/alunos/vantagens" method="GET" class="filtros">
+        <label>
+            Custo máximo (moedas)
+            <input type="number" name="custoMaximo" min="1"
+                   th:value="${custoMaximo != null} ? ${custoMaximo} : ''">
+        </label>
+        <label>
+            Empresa parceira
+            <select name="empresaId">
+                <option value="">— Todas —</option>
+                <option th:each="e : ${empresas}"
+                        th:value="${e.id}"
+                        th:text="${e.nome}"
+                        th:selected="${empresaIdSelecionada != null and empresaIdSelecionada == e.id}"></option>
+            </select>
+        </label>
+        <button type="submit">Filtrar</button>
+        <a class="botao-secundario" href="/alunos/vantagens">Limpar</a>
+    </form>
+
+    <div class="galeria-vantagens" th:if="${!vantagens.isEmpty()}">
+        <div class="card-vantagem" th:each="v : ${vantagens}">
+            <img th:if="${v.temFoto()}" th:src="@{|/vantagens/${v.id}/foto|}" alt="Foto da vantagem">
+            <img th:unless="${v.temFoto()}" src="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 140'&gt;&lt;rect fill='%23e5e7eb' width='220' height='140'/&gt;&lt;text x='110' y='75' font-family='sans-serif' font-size='12' fill='%2352525b' text-anchor='middle'&gt;sem foto&lt;/text&gt;&lt;/svg&gt;" alt="Sem foto">
+            <div class="corpo">
+                <h3 th:text="${v.descricao}">Descrição</h3>
+                <p class="custo" th:text="${v.custo + ' moedas'}">0 moedas</p>
+                <p class="empresa" th:text="${v.empresa.nome}">Empresa</p>
+                <form th:action="@{|/alunos/vantagens/${v.id}/resgatar|}" method="POST"
+                      style="margin-top: 0.5rem;">
+                    <button type="submit" th:disabled="${aluno.saldo < v.custo}">Resgatar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <p th:if="${vantagens.isEmpty()}" class="aviso">
+        Nenhuma vantagem encontrada com os filtros aplicados.
+    </p>
+</div>
+</body>
+</html>

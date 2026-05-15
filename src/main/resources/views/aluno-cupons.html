@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Meus Cupons</h1>
+
+    <p th:if="${codigoNovo != null}" class="alerta-sucesso">
+        Resgate concluído! Seu cupom de verificação:
+        <strong th:text="${codigoNovo}">—</strong>.
+        Use este código para retirar o benefício na empresa parceira.
+    </p>
+
+    <p class="dados-saldo">
+        Saldo atual: <strong th:text="${aluno.saldo}">0</strong> moedas.
+    </p>
+
+    <table class="tabela-extrato" th:if="${!cupons.isEmpty()}">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Vantagem</th>
+                <th>Empresa</th>
+                <th>Custo</th>
+                <th>Código de verificação</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="c : ${cupons}">
+                <td th:text="${#temporals.format(c.realizadoEm, 'dd/MM/yyyy HH:mm')}">—</td>
+                <td th:text="${c.vantagem.descricao}">—</td>
+                <td th:text="${c.vantagem.empresa.nome}">—</td>
+                <td th:text="${c.custo + ' moedas'}">—</td>
+                <td><code th:text="${c.codigo}">—</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p th:if="${cupons.isEmpty()}" class="aviso">
+        Você ainda não realizou resgates.
+        <a href="/alunos/vantagens">Ver catálogo de vantagens</a>.
+    </p>
+
+    <a class="botao-secundario" href="/alunos/perfil">Voltar ao perfil</a>
+</div>
+</body>
+</html>

@@ -9,6 +9,7 @@ import br.puc.moedaestudantil.model.Aluno;
 import br.puc.moedaestudantil.service.LinhaExtrato;
 import br.puc.moedaestudantil.service.ServicoCadastro;
 import br.puc.moedaestudantil.service.ServicoMoeda;
+import br.puc.moedaestudantil.service.ServicoResgate;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpResponse;
@@ -37,15 +38,18 @@ public class AlunoController {
     private final AlunoDAO alunoDAO;
     private final InstituicaoDAO instituicaoDAO;
     private final ServicoMoeda servicoMoeda;
+    private final ServicoResgate servicoResgate;
 
     public AlunoController(ServicoCadastro servicoCadastro,
                            AlunoDAO alunoDAO,
                            InstituicaoDAO instituicaoDAO,
-                           ServicoMoeda servicoMoeda) {
+                           ServicoMoeda servicoMoeda,
+                           ServicoResgate servicoResgate) {
         this.servicoCadastro = servicoCadastro;
         this.alunoDAO = alunoDAO;
         this.instituicaoDAO = instituicaoDAO;
         this.servicoMoeda = servicoMoeda;
+        this.servicoResgate = servicoResgate;
     }
 
     @Get("/cadastro")
@@ -119,11 +123,30 @@ public class AlunoController {
     @Produces(MediaType.TEXT_HTML)
     public Map<String, Object> extrato(Authentication authentication) {
         Aluno aluno = carregarAlunoLogado(authentication);
-        List<LinhaExtrato> linhas = servicoMoeda.extratoAluno(aluno.getId());
+        List<LinhaExtrato> linhas = new java.util.ArrayList<>();
+        linhas.addAll(servicoMoeda.extratoAluno(aluno.getId()));
+        linhas.addAll(servicoResgate.linhasExtratoAluno(aluno.getId()));
+        linhas.sort(java.util.Comparator.comparing(LinhaExtrato::data).reversed());
+
         Map<String, Object> model = new HashMap<>();
         model.put("titulo", "Meu Extrato");
         model.put("aluno", aluno);
         model.put("linhas", linhas);
+        return model;
+    }
+
+    @Get("/cupons")
+    @View("aluno-cupons")
+    @Secured("ALUNO")
+    @Produces(MediaType.TEXT_HTML)
+    public Map<String, Object> cupons(Authentication authentication,
+                                      @io.micronaut.http.annotation.QueryValue(defaultValue = "") String novo) {
+        Aluno aluno = carregarAlunoLogado(authentication);
+        Map<String, Object> model = new HashMap<>();
+        model.put("titulo", "Meus Cupons");
+        model.put("aluno", aluno);
+        model.put("cupons", servicoResgate.listarCuponsDoAluno(aluno.getId()));
+        model.put("codigoNovo", novo.isEmpty() ? null : novo);
         return model;
     }
 

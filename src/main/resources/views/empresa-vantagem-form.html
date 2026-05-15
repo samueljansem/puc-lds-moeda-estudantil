@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1 th:text="${titulo}">Nova Vantagem</h1>
+
+    <p th:if="${erro != null}" class="alerta-erro" th:text="${erro}">erro</p>
+
+    <form th:action="${acao}" method="POST" enctype="multipart/form-data">
+        <label>
+            Descrição do produto/benefício
+            <textarea name="descricao" maxlength="500" rows="3" required
+                      th:text="${vantagem != null} ? ${vantagem.descricao} : (${formDescricao} ?: '')"></textarea>
+        </label>
+        <label>
+            Custo em moedas
+            <input type="number" name="custo" min="1" required
+                   th:value="${vantagem != null} ? ${vantagem.custo} : (${formCusto} ?: '')">
+        </label>
+        <label>
+            Foto do produto (JPEG ou PNG, opcional, máx. 2 MB)
+            <input type="file" name="foto" accept="image/jpeg,image/png">
+        </label>
+
+        <div th:if="${vantagem != null and vantagem.temFoto()}" style="margin-bottom: 1rem;">
+            <p class="muted">Foto atual:</p>
+            <img th:src="@{|/vantagens/${vantagem.id}/foto|}" alt="Foto atual"
+                 style="max-width: 200px; border: 1px solid var(--cor-borda); border-radius: 4px;">
+            <p class="muted">Para trocar, selecione um novo arquivo acima. Para manter, deixe vazio.</p>
+        </div>
+
+        <button type="submit">Salvar</button>
+        <a class="botao-secundario" href="/empresas/vantagens">Cancelar</a>
+    </form>
+</div>
+</body>
+</html>
