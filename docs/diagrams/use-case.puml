@@ -1,0 +1,87 @@
+@startuml use-case
+' Diagrama de Casos de Uso — Sistema de Moeda Estudantil (Lab03S01)
+' Fonte: spec.md (US1–US5) + user-stories.md (US6–US12)
+' Códigos C01..C19 para referência cruzada com requisitos.
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+title Diagrama de Casos de Uso — Sistema de Moeda Estudantil
+
+actor "Aluno"            as Aluno
+actor "Professor"        as Professor
+actor "Empresa Parceira" as Empresa
+
+rectangle "Sistema de Moeda Estudantil" {
+  ' Casos de uso originais (US1–US5)
+  usecase "C01\nCadastrar-se no sistema"          as UC_CadastrarAluno
+  usecase "C02\nAutenticar-se (login/senha)"      as UC_Autenticar
+  usecase "C03\nConsultar extrato e saldo"        as UC_ConsultarExtrato
+  usecase "C04\nEnviar moedas a um aluno\n(com motivo obrigatório)" as UC_EnviarMoedas
+  usecase "C05\nReceber notificação\nde moedas recebidas"           as UC_ReceberNotificacao
+  usecase "C06\nCadastrar-se como\nempresa parceira"                as UC_CadastrarEmpresa
+  usecase "C07\nCadastrar vantagem\n(descrição, foto, custo)"       as UC_CadastrarVantagem
+  usecase "C08\nReceber e-mail de confirmação\nde resgate"          as UC_ReceberConfirmacao
+  usecase "C09\nConsultar catálogo\nde vantagens"                   as UC_ConsultarCatalogo
+  usecase "C10\nResgatar vantagem"                                  as UC_ResgatarVantagem
+  usecase "C11\nReceber cupom por e-mail\ncom código de verificação" as UC_ReceberCupom
+
+  ' Casos de uso novos (US6–US12)
+  usecase "C12\nEditar dados do perfil"           as UC_EditarPerfil
+  usecase "C13\nRecuperar senha"                  as UC_RecuperarSenha
+  usecase "C14\nEditar vantagem"                  as UC_EditarVantagem
+  usecase "C15\nDesativar vantagem"               as UC_DesativarVantagem
+  usecase "C16\nFiltrar catálogo"                 as UC_FiltrarCatalogo
+  usecase "C17\nListar alunos da instituição"     as UC_ListarAlunos
+  usecase "C18\nConsultar cupons emitidos"        as UC_ConsultarCupons
+  usecase "C19\nNotificar falha de entrega"       as UC_NotificarFalha
+}
+
+' Aluno
+Aluno --> UC_CadastrarAluno
+Aluno --> UC_Autenticar
+Aluno --> UC_ConsultarExtrato
+Aluno --> UC_ReceberNotificacao
+Aluno --> UC_ConsultarCatalogo
+Aluno --> UC_ResgatarVantagem
+Aluno --> UC_ReceberCupom
+Aluno --> UC_EditarPerfil
+
+' Professor
+Professor --> UC_Autenticar
+Professor --> UC_EnviarMoedas
+Professor --> UC_ConsultarExtrato
+Professor --> UC_EditarPerfil
+
+' Empresa Parceira
+Empresa --> UC_CadastrarEmpresa
+Empresa --> UC_Autenticar
+Empresa --> UC_CadastrarVantagem
+Empresa --> UC_ReceberConfirmacao
+Empresa --> UC_EditarPerfil
+
+' Dependências entre casos de uso — <<include>> (sempre executado)
+UC_EnviarMoedas      ..> UC_ReceberNotificacao : <<include>>
+UC_ResgatarVantagem  ..> UC_ReceberCupom       : <<include>>
+UC_ResgatarVantagem  ..> UC_ReceberConfirmacao : <<include>>
+
+' Dependências entre casos de uso — <<extend>> (opcional/condicional)
+UC_RecuperarSenha    ..> UC_Autenticar         : <<extend>>
+UC_EditarVantagem    ..> UC_CadastrarVantagem  : <<extend>>
+UC_DesativarVantagem ..> UC_CadastrarVantagem  : <<extend>>
+UC_FiltrarCatalogo   ..> UC_ConsultarCatalogo  : <<extend>>
+UC_ListarAlunos      ..> UC_EnviarMoedas       : <<extend>>
+UC_ConsultarCupons   ..> UC_ConsultarExtrato   : <<extend>>
+UC_NotificarFalha    ..> UC_ReceberCupom       : <<extend>>
+
+note bottom of UC_EnviarMoedas
+  Pré-condição: saldo do professor ≥ valor
+  e motivo não vazio (FR-005).
+end note
+
+note bottom of UC_ResgatarVantagem
+  Pré-condição: saldo do aluno ≥ custo
+  e vantagem disponível (FR-010).
+end note
+
+@enduml

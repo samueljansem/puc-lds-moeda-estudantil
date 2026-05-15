@@ -1,0 +1,4 @@
+- diagrama de caso de uso: adicionar `extends`; adicionar codigo do caso de uso `C01`, `C02`, etc;
+- pelo menos mais 7 stories de usuario
+- diagrama de classe: adicionar composicao, agregacao e heranca; completar metodos de classes, criar mais 3 classes
+- diagrama de componentes: adicionar interface requerida e fornecida; adicionar tipos de comunicacao (tcp, rest)

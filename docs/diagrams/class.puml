@@ -1,0 +1,191 @@
+@startuml class
+' Diagrama de Classes — Sistema de Moeda Estudantil (Lab03S01)
+' Fonte: data-model.md + user-stories.md (US6–US12)
+' Notação: atributos em português; tipos conceituais (int, string, etc.).
+
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+title Diagrama de Classes — Sistema de Moeda Estudantil
+
+enum TipoTransacao {
+  TRANSFERENCIA
+  RESGATE
+}
+
+enum TipoAtor {
+  ALUNO
+  PROFESSOR
+  EMPRESA_PARCEIRA
+}
+
+enum StatusEntrega {
+  PENDENTE
+  ENTREGUE
+  FALHA
+}
+
+abstract class Usuario {
+  - id: long
+  - nome: string
+  - email: string
+  + autenticar(login: string, senha: string): boolean
+  + trocarSenha(atual: string, nova: string): void
+  + editarPerfil(...): void
+}
+
+class Credencial {
+  - id: long
+  - login: string
+  - senhaHash: string
+  - tipoAtor: TipoAtor
+  + validarSenha(senha: string): boolean
+  + redefinirSenha(nova: string): void
+}
+
+class Instituicao {
+  - id: long
+  - nome: string
+  + listarAlunos(): List<Aluno>
+  + listarProfessores(): List<Professor>
+}
+
+class Aluno {
+  - cpf: string
+  - rg: string
+  - endereco: string
+  - curso: string
+  - saldo: int = 0
+  + {static} cadastrar(...): Aluno
+  + resgatar(v: Vantagem): Transacao
+  + consultarExtrato(): Extrato
+  + consultarCupons(): List<Transacao>
+}
+
+class Professor {
+  - cpf: string
+  - departamento: string
+  - saldo: int = 0
+  + enviarMoedas(a: Aluno, valor: int, motivo: string): Transacao
+  + receberGrantSemestral(): void
+  + consultarExtrato(): Extrato
+  + listarAlunosDaInstituicao(): List<Aluno>
+}
+
+class EmpresaParceira {
+  - cnpj: string
+  + cadastrarVantagem(descricao: string, fotoUrl: string, custo: int): Vantagem
+  + editarVantagem(v: Vantagem): void
+  + desativarVantagem(v: Vantagem): void
+}
+
+class Vantagem {
+  - id: long
+  - descricao: string
+  - fotoUrl: string
+  - custo: int
+  - disponivel: boolean = true
+  + estaDisponivel(): boolean
+  + alterarCusto(novo: int): void
+  + {static} filtrar(custoMax: int, empresa: EmpresaParceira): List<Vantagem>
+}
+
+class Transacao {
+  - id: long
+  - tipo: TipoTransacao
+  - data: datetime
+  - valor: int
+  - motivo: string
+  - codigoVerificacao: string
+  + ehTransferencia(): boolean
+  + ehResgate(): boolean
+  + {static} novaTransferencia(p: Professor, a: Aluno, valor: int, motivo: string): Transacao
+  + {static} novoResgate(a: Aluno, v: Vantagem, e: EmpresaParceira): Transacao
+}
+
+class Extrato {
+  - saldo: int
+  + adicionarLinha(l: LinhaExtrato): void
+  + saldoAtual(): int
+}
+
+class LinhaExtrato {
+  - data: datetime
+  - descricao: string
+  - valor: int
+  - tipo: TipoTransacao
+}
+
+class Notificacao {
+  - id: long
+  - destinatarioEmail: string
+  - assunto: string
+  - corpo: string
+  - dataEnvio: datetime
+  - statusEntrega: StatusEntrega
+  + marcarFalhaEntrega(): void
+  + reenviar(): void
+}
+
+' === Herança ===
+Usuario <|-- Aluno
+Usuario <|-- Professor
+Usuario <|-- EmpresaParceira
+
+' === Composição (vida-de) ===
+Extrato "1" *-- "*" LinhaExtrato : compõe
+
+' === Agregação (tem-um, vida própria) ===
+Instituicao     "1" o-- "*" Aluno     : agrega
+Instituicao     "1" o-- "*" Professor : agrega
+EmpresaParceira "1" o-- "*" Vantagem  : agrega
+
+' === Associações simples ===
+Usuario "1" --> "1" Credencial : autentica-se com
+
+' Transação como associação N-ária entre Aluno/Professor/Vantagem/Empresa
+Transacao "*" --> "1"    Aluno           : envolve
+Transacao "*" --> "0..1" Professor       : origem (transferência)
+Transacao "*" --> "0..1" Vantagem        : destino (resgate)
+Transacao "*" --> "0..1" EmpresaParceira : parceiro (resgate)
+
+' Extrato é produzido por Aluno e Professor a partir de Transações
+Aluno     ..> Extrato : produz
+Professor ..> Extrato : produz
+Extrato   ..> Transacao : deriva-de
+
+' Notificação é gerada por transações
+Transacao ..> Notificacao : dispara
+
+note right of Transacao
+  Invariantes:
+  - valor > 0
+  - TRANSFERENCIA ⇒ professor e motivo preenchidos;
+    vantagem, empresa e codigoVerificacao nulos.
+  - RESGATE ⇒ vantagem, empresa e
+    codigoVerificacao preenchidos; professor e motivo nulos.
+  - codigoVerificacao é único.
+end note
+
+note right of Professor
+  Regra: a cada semestre, saldo += 1000.
+  (FR-004, acumulativo, não reseta.)
+end note
+
+note right of Aluno
+  Invariante: saldo ≥ 0.
+end note
+
+note right of Usuario
+  Superclasse abstrata. Concentra
+  identidade e autenticação dos três
+  atores. Mapeada como JPA JOINED
+  (Lab03S02).
+end note
+
+note right of Notificacao
+  StatusEntrega = FALHA habilita o
+  reenvio (US12). I/O de envio fica
+  no ServicoNotificacao, não na entidade.
+end note
+
+@enduml

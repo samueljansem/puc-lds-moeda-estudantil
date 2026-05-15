@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Meu Perfil</h1>
+
+    <dl class="dados">
+        <dt>Nome</dt>          <dd th:text="${aluno.nome}"></dd>
+        <dt>E-mail</dt>        <dd th:text="${aluno.email}"></dd>
+        <dt>CPF</dt>           <dd th:text="${aluno.cpf}"></dd>
+        <dt>RG</dt>            <dd th:text="${aluno.rg}"></dd>
+        <dt>Endereço</dt>      <dd th:text="${aluno.endereco}"></dd>
+        <dt>Curso</dt>         <dd th:text="${aluno.curso}"></dd>
+        <dt>Instituição</dt>   <dd th:text="${aluno.instituicao.nome}"></dd>
+        <dt>Saldo de moedas</dt><dd th:text="${aluno.saldo}"></dd>
+    </dl>
+
+    <a class="botao" href="/alunos/editar">Editar perfil</a>
+</div>
+</body>
+</html>

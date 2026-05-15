@@ -1,0 +1,6 @@
+applicationType: default
+defaultPackage: br.puc.moedaestudantil
+testFramework: junit
+sourceLanguage: java
+buildTool: gradle_kotlin
+features: [app-name, data, data-jpa, flyway, gradle, h2, http-client-test, java, java-application, jdbc-hikari, junit, logback, micronaut-aot, micronaut-build, micronaut-configuration-validation-gradle-plugin, micronaut-http-validation, netty-server, properties, readme, security-processor, security-session, serialization-jackson, shade, static-resources, validation, views-fieldset, views-thymeleaf]

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Entrar</h1>
+
+    <p th:if="${temCadastro}" class="alerta-sucesso">
+        Cadastro realizado com sucesso. Faça login para acessar sua conta.
+    </p>
+
+    <p th:if="${temErro}" class="alerta-erro">
+        Login ou senha inválidos.
+    </p>
+
+    <form action="/login" method="POST">
+        <label>
+            Login
+            <input type="text" name="username" autocomplete="username" required autofocus>
+        </label>
+        <label>
+            Senha
+            <input type="password" name="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit">Entrar</button>
+    </form>
+
+    <p class="rodape-form">
+        Ainda não tem conta?
+        <a href="/alunos/cadastro">Cadastrar como aluno</a>
+        ou
+        <a href="/empresas/cadastro">cadastrar empresa parceira</a>.
+    </p>
+</div>
+</body>
+</html>

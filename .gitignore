@@ -1,0 +1,40 @@
+# macOS / Windows shell artifacts
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.iml
+*.swp
+*.tmp
+
+# Java / Gradle / Maven
+target/
+build/
+out/
+.gradle/
+.micronaut/
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.ipr
+*.iws
+.project
+.settings/
+.classpath
+.factorypath
+
+# H2 (file mode) — banco de dados local de desenvolvimento
+data/
+*.mv.db
+*.trace.db
+*.lock.db
+
+# Local env files (if any are introduced later)
+.env
+.env.*
+!.env.example
+
+# PlantUML rendered artifacts are intentionally NOT ignored — the Lab03S01
+# deliverables include the rendered PNGs under specs/.../diagrams/.

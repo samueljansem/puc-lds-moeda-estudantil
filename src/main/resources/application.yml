@@ -1,0 +1,56 @@
+micronaut:
+  application:
+    name: moeda-estudantil
+  server:
+    port: 8080
+  security:
+    authentication: session
+    endpoints:
+      logout:
+        enabled: false   # usamos LogoutController próprio
+    redirect:
+      login-success: /
+      login-failure: /login?erro
+      logout: /
+      unauthorized:
+        url: /login
+      forbidden:
+        url: /login
+    intercept-url-map:
+      - pattern: /css/**
+        access: isAnonymous()
+      - pattern: /favicon.ico
+        access: isAnonymous()
+  session:
+    http:
+      cookie-secure: false
+  views:
+    thymeleaf:
+      cache: false   # desliga cache em dev; ligar em produção
+  router:
+    static-resources:
+      css:
+        paths: classpath:public/css
+        mapping: /css/**
+
+datasources:
+  default:
+    url: "jdbc:h2:./data/moedaestudantil;DB_CLOSE_ON_EXIT=FALSE"
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+    dialect: H2
+
+flyway:
+  datasources:
+    default:
+      enabled: true
+      locations: classpath:db/migration
+
+jpa:
+  default:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: validate   # entidades JPA precisam casar com o schema migrado
+        show_sql: false

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Editar Perfil</h1>
+
+    <p th:if="${erroDuplicado == 'email'}" class="alerta-erro">
+        Este e-mail já está em uso por outro cadastro.
+    </p>
+
+    <p class="aviso">CPF e RG não podem ser alterados.</p>
+
+    <form action="/alunos/editar" method="POST">
+        <label>
+            E-mail
+            <input type="email" name="email" maxlength="120" required
+                   th:value="${aluno.email}">
+        </label>
+        <label>
+            Endereço
+            <input type="text" name="endereco" maxlength="255" required
+                   th:value="${aluno.endereco}">
+        </label>
+        <label>
+            Curso
+            <input type="text" name="curso" maxlength="120" required
+                   th:value="${aluno.curso}">
+        </label>
+        <button type="submit">Salvar</button>
+        <a class="botao-secundario" href="/alunos/perfil">Cancelar</a>
+    </form>
+</div>
+</body>
+</html>

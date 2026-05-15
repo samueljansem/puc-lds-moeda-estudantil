@@ -1,0 +1,162 @@
+@startuml er
+' Modelo ER (lógico, IE/Crow's Foot) — Sistema de Moeda Estudantil
+' Lab03S02. Reflete a herança JPA JOINED da hierarquia Usuario:
+' tabela "usuario" (pai) + tabelas filhas (aluno, professor, empresa_parceira)
+' com PK que também é FK para usuario.id.
+
+skinparam shadowing false
+skinparam linetype ortho
+hide circle
+title Modelo ER — Sistema de Moeda Estudantil
+
+' === Tabelas implementadas em Lab03S02 ===
+
+entity "usuario" as usuario #LightYellow {
+  *id : bigint <<PK>>
+  --
+  *nome : varchar(120)
+  *email : varchar(120) <<unique>>
+  *credencial_id : bigint <<FK>>
+  *tipo : varchar(20) <<discriminator>>
+  ' tipo ∈ {ALUNO, PROFESSOR, EMPRESA_PARCEIRA}
+}
+
+entity "aluno" as aluno #LightYellow {
+  *id : bigint <<PK, FK→usuario.id>>
+  --
+  *cpf : varchar(11) <<unique>>
+  *rg : varchar(20)
+  *endereco : varchar(255)
+  *curso : varchar(120)
+  *instituicao_id : bigint <<FK>>
+  *saldo : int  ' default 0; CHECK saldo >= 0
+}
+
+entity "professor" as professor #LightCyan {
+  *id : bigint <<PK, FK→usuario.id>>
+  --
+  *cpf : varchar(11) <<unique>>
+  *departamento : varchar(120)
+  *instituicao_id : bigint <<FK>>
+  *saldo : int  ' default 0; CHECK saldo >= 0
+}
+
+entity "empresa_parceira" as empresa #LightYellow {
+  *id : bigint <<PK, FK→usuario.id>>
+  --
+  *cnpj : varchar(14) <<unique>>
+}
+
+entity "credencial" as credencial #LightYellow {
+  *id : bigint <<PK>>
+  --
+  *login : varchar(80) <<unique>>
+  *senha_hash : varchar(255)
+  *tipo_ator : varchar(20)
+}
+
+entity "instituicao" as instituicao #LightYellow {
+  *id : bigint <<PK>>
+  --
+  *nome : varchar(120) <<unique>>
+}
+
+' === Tabelas para Lab03S03 ===
+
+entity "vantagem" as vantagem #LightCyan {
+  *id : bigint <<PK>>
+  --
+  *empresa_id : bigint <<FK>>
+  *descricao : varchar(255)
+  *foto_url : varchar(255)
+  *custo : int  ' CHECK custo > 0
+  *disponivel : boolean
+}
+
+entity "transacao" as transacao #LightCyan {
+  *id : bigint <<PK>>
+  --
+  *tipo : varchar(20)  ' TRANSFERENCIA | RESGATE
+  *data : timestamp
+  *valor : int  ' CHECK valor > 0
+  *aluno_id : bigint <<FK>>
+  professor_id : bigint <<FK, nullable>>
+  vantagem_id : bigint <<FK, nullable>>
+  empresa_id : bigint <<FK, nullable>>
+  motivo : varchar(500) <<nullable>>
+  codigo_verificacao : varchar(40) <<unique, nullable>>
+}
+
+entity "notificacao" as notificacao #LightCyan {
+  *id : bigint <<PK>>
+  --
+  *destinatario_email : varchar(120)
+  *assunto : varchar(255)
+  *corpo : text
+  *data_envio : timestamp
+  *status_entrega : varchar(20)
+  ' PENDENTE | ENTREGUE | FALHA
+  transacao_id : bigint <<FK, nullable>>
+}
+
+entity "linha_extrato" as linha_extrato #LightCyan {
+  *id : bigint <<PK>>
+  --
+  *extrato_id : bigint <<FK>>
+  *data : timestamp
+  *descricao : varchar(255)
+  *valor : int
+  *tipo : varchar(20)
+}
+
+' === Relacionamentos ===
+
+' Herança JOINED: PK das filhas é FK para usuario
+usuario ||--o| aluno              : "is-a"
+usuario ||--o| professor          : "is-a"
+usuario ||--o| empresa            : "is-a"
+
+' Cada usuario tem uma credencial (1:1)
+credencial ||--|| usuario         : "autentica"
+
+' Instituicao agrega alunos e professores
+instituicao ||--o{ aluno          : "tem"
+instituicao ||--o{ professor      : "tem"
+
+' Empresa oferece vantagens (Sprint 3)
+empresa ||--o{ vantagem           : "oferece"
+
+' Transações envolvem aluno (sempre) e professor/vantagem/empresa (conforme tipo)
+aluno ||--o{ transacao            : "envolve"
+professor ||--o{ transacao        : "origem"
+vantagem ||--o{ transacao         : "destino"
+empresa ||--o{ transacao          : "parceiro"
+
+' Notificações geradas por transações
+transacao ||--o{ notificacao      : "dispara"
+
+' Linhas de extrato compostas por transações
+transacao ||--o{ linha_extrato    : "deriva"
+
+legend right
+  |= Cor      |= Significado                       |
+  | Amarelo   | Implementado em Lab03S02 (V1)      |
+  | Ciano     | Reservado para Lab03S03 (V3+)      |
+endlegend
+
+note bottom
+  **Estratégia ORM**: Micronaut Data JPA + Hibernate.
+  **Herança**: JPA JOINED — tabela `usuario` + tabelas filhas
+  com PK = FK para `usuario.id`.
+  **Migrations**: Flyway versionado em
+  `src/main/resources/db/migration/`.
+
+  Lab03S02 (V1__create_schema.sql + V2__seed_instituicoes.sql)
+  cria 5 tabelas: usuario, aluno, empresa_parceira, credencial,
+  instituicao. As demais entram em migrations da Lab03S03.
+
+  CHECKs `saldo >= 0`, `custo > 0`, `valor > 0` e a unicidade de
+  `codigo_verificacao` ficam expressos no schema.
+end note
+
+@enduml
