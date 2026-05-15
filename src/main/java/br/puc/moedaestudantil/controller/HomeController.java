@@ -26,6 +26,8 @@ public class HomeController {
         return switch (role) {
             case "ALUNO" -> HttpResponse.seeOther(URI.create("/alunos/perfil"));
             case "EMPRESA_PARCEIRA" -> HttpResponse.seeOther(URI.create("/empresas/perfil"));
+            case "PROFESSOR" -> HttpResponse.seeOther(URI.create("/professores/perfil"));
+            case "ADMIN" -> HttpResponse.seeOther(URI.create("/admin/inicio"));
             default -> HttpResponse.seeOther(URI.create("/login"));
         };
     }

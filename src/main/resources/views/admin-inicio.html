@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Administração</h1>
+    <p>Você está logado como administrador.</p>
+    <p class="muted">As ações administrativas (conceder semestre,
+        caixa global de notificações) serão liberadas nas próximas fases.</p>
+</div>
+</body>
+</html>

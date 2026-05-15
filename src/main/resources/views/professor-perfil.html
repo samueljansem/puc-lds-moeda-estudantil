@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Meu Perfil</h1>
+
+    <dl class="dados">
+        <dt>Nome</dt>          <dd th:text="${professor.nome}"></dd>
+        <dt>E-mail</dt>        <dd th:text="${professor.email}"></dd>
+        <dt>CPF</dt>           <dd th:text="${professor.cpf}"></dd>
+        <dt>Departamento</dt>  <dd th:text="${professor.departamento}"></dd>
+        <dt>Instituição</dt>   <dd th:text="${professor.instituicao.nome}"></dd>
+        <dt>Saldo de moedas</dt><dd th:text="${professor.saldo}"></dd>
+    </dl>
+
+    <p class="muted">As ações de transferir moedas, listar alunos e ver
+        extrato serão liberadas nas próximas fases.</p>
+</div>
+</body>
+</html>

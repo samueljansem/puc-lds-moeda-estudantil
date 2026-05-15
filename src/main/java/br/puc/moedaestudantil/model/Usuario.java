@@ -42,6 +42,9 @@ public abstract class Usuario {
     @JoinColumn(name = "credencial_id", nullable = false, unique = true)
     private Credencial credencial;
 
+    @Column(nullable = false)
+    private boolean ativo = true;
+
     protected Usuario() {
     }
 
@@ -62,4 +65,7 @@ public abstract class Usuario {
 
     public Credencial getCredencial() { return credencial; }
     public void setCredencial(Credencial credencial) { this.credencial = credencial; }
+
+    public boolean isAtivo() { return ativo; }
+    public void setAtivo(boolean ativo) { this.ativo = ativo; }
 }
