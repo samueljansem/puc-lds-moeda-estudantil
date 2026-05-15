@@ -336,3 +336,23 @@ code {
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 0.85rem;
 }
+
+.form-desativar {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--cor-borda);
+}
+
+.link-perigoso {
+    background: transparent;
+    border: 1px solid var(--cor-erro);
+    color: var(--cor-erro);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+.link-perigoso:hover {
+    background: var(--cor-erro);
+    color: #fff;
+}

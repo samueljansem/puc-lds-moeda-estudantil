@@ -21,8 +21,14 @@
         <a class="botao-secundario" href="/alunos/cupons">Meus cupons</a>
         <a class="botao-secundario" href="/alunos/extrato">Extrato</a>
         <a class="botao-secundario" href="/alunos/editar">Editar perfil</a>
+        <a class="botao-secundario" href="/trocar-senha">Trocar senha</a>
         <a class="botao-secundario" href="/notificacoes">Notificações</a>
     </div>
+
+    <form action="/alunos/desativar" method="POST" class="form-desativar"
+          onsubmit="return confirm('Tem certeza? Sua conta será desativada e você não conseguirá mais fazer login. Esta ação não pode ser desfeita aqui.');">
+        <button type="submit" class="link-perigoso">Desativar minha conta</button>
+    </form>
 </div>
 </body>
 </html>

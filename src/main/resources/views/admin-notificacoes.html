@@ -17,7 +17,7 @@
                 <th>Destinatário</th>
                 <th>Assunto</th>
                 <th>Status</th>
-                <th>Código</th>
+                <th>Mensagem</th>
             </tr>
         </thead>
         <tbody>
@@ -27,7 +27,7 @@
                 <td th:text="${n.assunto}">—</td>
                 <td th:text="${n.status}"
                     th:class="${n.status.name() == 'ENVIADA'} ? 'status-ok' : 'status-falha'">—</td>
-                <td th:text="${n.codigoReferencia != null} ? ${n.codigoReferencia} : '—'">—</td>
+                <td><pre class="corpo-notif" th:text="${n.corpo}">—</pre></td>
             </tr>
         </tbody>
     </table>

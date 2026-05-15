@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Trocar Senha</h1>
+
+    <p th:if="${sucesso}" class="alerta-sucesso">
+        Senha atualizada com sucesso.
+    </p>
+    <p th:if="${erro != null}" class="alerta-erro" th:text="${erro}">erro</p>
+
+    <form action="/trocar-senha" method="POST">
+        <label>
+            Senha atual
+            <input type="password" name="senhaAtual" required autocomplete="current-password">
+        </label>
+        <label>
+            Nova senha (mínimo 6 caracteres)
+            <input type="password" name="senhaNova" minlength="6" maxlength="100" required
+                   autocomplete="new-password">
+        </label>
+        <label>
+            Confirmar nova senha
+            <input type="password" name="confirmacao" minlength="6" maxlength="100" required
+                   autocomplete="new-password">
+        </label>
+        <button type="submit">Salvar</button>
+        <a class="botao-secundario" href="/">Cancelar</a>
+    </form>
+</div>
+</body>
+</html>

@@ -2,7 +2,9 @@ package br.puc.moedaestudantil.service;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import br.puc.moedaestudantil.dao.CredencialDAO;
+import br.puc.moedaestudantil.dao.UsuarioDAO;
 import br.puc.moedaestudantil.model.Credencial;
+import br.puc.moedaestudantil.model.TipoAtor;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpRequest;
@@ -18,9 +20,11 @@ import java.util.List;
 public class ServicoAutenticacao implements HttpRequestAuthenticationProvider<Object> {
 
     private final CredencialDAO credencialDAO;
+    private final UsuarioDAO usuarioDAO;
 
-    public ServicoAutenticacao(CredencialDAO credencialDAO) {
+    public ServicoAutenticacao(CredencialDAO credencialDAO, UsuarioDAO usuarioDAO) {
         this.credencialDAO = credencialDAO;
+        this.usuarioDAO = usuarioDAO;
     }
 
     @Override
@@ -32,8 +36,23 @@ public class ServicoAutenticacao implements HttpRequestAuthenticationProvider<Ob
 
         return credencialDAO.findByLogin(login)
                 .filter(c -> verificar(senha, c.getSenhaHash()))
-                .<AuthenticationResponse>map(this::sucesso)
+                .map(this::responder)
                 .orElseGet(() -> AuthenticationResponse.failure(AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH));
+    }
+
+    private AuthenticationResponse responder(Credencial c) {
+        // Admin não tem linha em `usuario`; sua conta nunca está "desativada".
+        if (c.getTipoAtor() == TipoAtor.ADMIN) {
+            return sucesso(c);
+        }
+        // Para demais papéis, a conta precisa estar ativa.
+        boolean ativo = usuarioDAO.findByCredencialId(c.getId())
+                .map(u -> u.isAtivo())
+                .orElse(false);
+        if (!ativo) {
+            return AuthenticationResponse.failure(AuthenticationFailureReason.USER_DISABLED);
+        }
+        return sucesso(c);
     }
 
     private boolean verificar(String senhaPlana, String hash) {

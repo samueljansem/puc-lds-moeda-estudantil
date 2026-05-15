@@ -5,16 +5,19 @@ import br.puc.moedaestudantil.dao.AlunoDAO;
 import br.puc.moedaestudantil.dao.CredencialDAO;
 import br.puc.moedaestudantil.dao.EmpresaParceiraDAO;
 import br.puc.moedaestudantil.dao.InstituicaoDAO;
+import br.puc.moedaestudantil.dao.UsuarioDAO;
 import br.puc.moedaestudantil.dto.CadastroAlunoForm;
 import br.puc.moedaestudantil.dto.CadastroEmpresaForm;
 import br.puc.moedaestudantil.dto.EditaAlunoForm;
 import br.puc.moedaestudantil.dto.EditaEmpresaForm;
 import br.puc.moedaestudantil.exception.CadastroDuplicadoException;
+import br.puc.moedaestudantil.exception.SenhaIncorretaException;
 import br.puc.moedaestudantil.model.Aluno;
 import br.puc.moedaestudantil.model.Credencial;
 import br.puc.moedaestudantil.model.EmpresaParceira;
 import br.puc.moedaestudantil.model.Instituicao;
 import br.puc.moedaestudantil.model.TipoAtor;
+import br.puc.moedaestudantil.model.Usuario;
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
 
@@ -27,15 +30,18 @@ public class ServicoCadastro {
     private final EmpresaParceiraDAO empresaDAO;
     private final CredencialDAO credencialDAO;
     private final InstituicaoDAO instituicaoDAO;
+    private final UsuarioDAO usuarioDAO;
 
     public ServicoCadastro(AlunoDAO alunoDAO,
                            EmpresaParceiraDAO empresaDAO,
                            CredencialDAO credencialDAO,
-                           InstituicaoDAO instituicaoDAO) {
+                           InstituicaoDAO instituicaoDAO,
+                           UsuarioDAO usuarioDAO) {
         this.alunoDAO = alunoDAO;
         this.empresaDAO = empresaDAO;
         this.credencialDAO = credencialDAO;
         this.instituicaoDAO = instituicaoDAO;
+        this.usuarioDAO = usuarioDAO;
     }
 
     @Transactional
@@ -120,6 +126,28 @@ public class ServicoCadastro {
         empresa.setNome(form.nome());
         empresa.setEmail(form.email());
         return empresaDAO.update(empresa);
+    }
+
+    @Transactional
+    public void trocarSenha(Long credencialId, String senhaAtual, String senhaNova) {
+        if (senhaNova == null || senhaNova.length() < 6) {
+            throw new IllegalArgumentException("A nova senha deve ter pelo menos 6 caracteres.");
+        }
+        Credencial c = credencialDAO.findById(credencialId)
+                .orElseThrow(() -> new IllegalStateException("Credencial não encontrada."));
+        if (!BCrypt.verifyer().verify(senhaAtual.toCharArray(), c.getSenhaHash()).verified) {
+            throw new SenhaIncorretaException();
+        }
+        c.setSenhaHash(hash(senhaNova));
+        credencialDAO.update(c);
+    }
+
+    @Transactional
+    public void desativarUsuario(Long usuarioId) {
+        Usuario u = usuarioDAO.findById(usuarioId)
+                .orElseThrow(() -> new IllegalStateException("Usuário não encontrado."));
+        u.setAtivo(false);
+        usuarioDAO.update(u);
     }
 
     private String hash(String senhaPlana) {

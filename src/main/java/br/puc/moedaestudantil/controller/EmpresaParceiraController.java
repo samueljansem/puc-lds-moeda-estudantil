@@ -104,6 +104,15 @@ public class EmpresaParceiraController {
         }
     }
 
+    @Post(value = "/desativar", consumes = MediaType.APPLICATION_FORM_URLENCODED)
+    @Secured("EMPRESA_PARCEIRA")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public MutableHttpResponse<?> desativar(Authentication authentication) {
+        EmpresaParceira empresa = carregarEmpresaLogada(authentication);
+        servicoCadastro.desativarUsuario(empresa.getId());
+        return HttpResponse.seeOther(URI.create("/logout"));
+    }
+
     private EmpresaParceira carregarEmpresaLogada(Authentication authentication) {
         return empresaDAO.findByCredencialLogin(authentication.getName())
                 .orElseThrow(() -> new IllegalStateException("Empresa autenticada não encontrada"));

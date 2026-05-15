@@ -135,6 +135,15 @@ public class AlunoController {
         return model;
     }
 
+    @Post(value = "/desativar", consumes = MediaType.APPLICATION_FORM_URLENCODED)
+    @Secured("ALUNO")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public MutableHttpResponse<?> desativar(Authentication authentication) {
+        Aluno aluno = carregarAlunoLogado(authentication);
+        servicoCadastro.desativarUsuario(aluno.getId());
+        return HttpResponse.seeOther(URI.create("/logout"));
+    }
+
     @Get("/cupons")
     @View("aluno-cupons")
     @Secured("ALUNO")

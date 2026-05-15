@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Redefinir Senha</h1>
+
+    <p th:if="${erro != null}" class="alerta-erro" th:text="${erro}">erro</p>
+
+    <form action="/redefinir-senha" method="POST">
+        <input type="hidden" name="token" th:value="${token}">
+        <label>
+            Nova senha (mínimo 6 caracteres)
+            <input type="password" name="senhaNova" minlength="6" maxlength="100" required
+                   autocomplete="new-password">
+        </label>
+        <label>
+            Confirmar nova senha
+            <input type="password" name="confirmacao" minlength="6" maxlength="100" required
+                   autocomplete="new-password">
+        </label>
+        <button type="submit">Redefinir senha</button>
+        <a class="botao-secundario" href="/login">Cancelar</a>
+    </form>
+</div>
+</body>
+</html>

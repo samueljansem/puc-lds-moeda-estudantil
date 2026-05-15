@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1>Recuperar Senha</h1>
+
+    <p th:if="${enviado}" class="alerta-sucesso">
+        Se o e-mail informado estiver cadastrado, enviamos um link de
+        redefinição. Confira sua caixa de notificações (e a caixa global em
+        <code>/admin/notificacoes</code> se você é admin).
+    </p>
+
+    <p th:unless="${enviado}">
+        Informe o e-mail cadastrado. Enviaremos um link para você definir
+        uma nova senha.
+    </p>
+
+    <form th:unless="${enviado}" action="/recuperar-senha" method="POST">
+        <label>
+            E-mail
+            <input type="email" name="email" maxlength="120" required>
+        </label>
+        <button type="submit">Enviar link</button>
+        <a class="botao-secundario" href="/login">Voltar ao login</a>
+    </form>
+
+    <p th:if="${enviado}">
+        <a class="botao-secundario" href="/login">Voltar ao login</a>
+    </p>
+</div>
+</body>
+</html>

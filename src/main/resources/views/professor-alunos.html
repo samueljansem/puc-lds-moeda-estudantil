@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
+<body>
+<div th:fragment="conteudo" class="card">
+    <h1 th:text="${titulo}">Alunos da Instituição</h1>
+
+    <table class="tabela-extrato" th:if="${!alunos.isEmpty()}">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Curso</th>
+                <th>E-mail</th>
+                <th>Saldo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="a : ${alunos}">
+                <td th:text="${a.nome}">—</td>
+                <td th:text="${a.curso}">—</td>
+                <td th:text="${a.email}">—</td>
+                <td th:text="${a.saldo + ' moedas'}">0</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p th:if="${alunos.isEmpty()}" class="aviso">
+        Não há alunos cadastrados na sua instituição.
+    </p>
+
+    <a class="botao-secundario" href="/professores/perfil">Voltar ao perfil</a>
+</div>
+</body>
+</html>

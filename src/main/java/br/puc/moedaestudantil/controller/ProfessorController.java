@@ -96,6 +96,18 @@ public class ProfessorController {
         return model;
     }
 
+    @Get("/alunos")
+    @View("professor-alunos")
+    @Produces(MediaType.TEXT_HTML)
+    public Map<String, Object> alunos(Authentication authentication) {
+        Professor professor = carregarProfessorLogado(authentication);
+        Map<String, Object> model = new HashMap<>();
+        model.put("titulo", "Alunos da " + professor.getInstituicao().getNome());
+        model.put("professor", professor);
+        model.put("alunos", alunoDAO.findByInstituicaoIdOrderByNome(professor.getInstituicao().getId()));
+        return model;
+    }
+
     private Map<String, Object> modelTransferir(Professor professor,
                                                 TransferenciaForm form,
                                                 String erro,
