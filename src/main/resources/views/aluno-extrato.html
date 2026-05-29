@@ -2,12 +2,18 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
 <body>
-<div th:fragment="conteudo" class="card">
+<div th:fragment="conteudo" class="card card--wide">
     <h1>Meu Extrato</h1>
 
-    <p class="dados-saldo">
-        Saldo atual: <strong th:text="${aluno.saldo}">0</strong> moedas.
-    </p>
+    <div class="saldo-card">
+        <div class="saldo-card-info">
+            <span class="saldo-card-label">Saldo atual</span>
+            <div class="saldo-card-valor">
+                <strong th:text="${aluno.saldo}">0</strong>
+                <span>moedas</span>
+            </div>
+        </div>
+    </div>
 
     <table class="tabela-extrato" th:if="${!linhas.isEmpty()}">
         <thead>
@@ -31,11 +37,20 @@
         </tbody>
     </table>
 
-    <p th:if="${linhas.isEmpty()}" class="aviso">
-        Você ainda não tem transações no extrato.
-    </p>
+    <div th:if="${linhas.isEmpty()}" class="vazio">
+        <div class="vazio-icone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 4h16v17l-4-2-4 2-4-2-4 2z"/>
+                <path d="M8 9h8M8 13h8M8 17h4"/>
+            </svg>
+        </div>
+        <p class="vazio-titulo">Extrato vazio</p>
+        <p>Você ainda não tem transações registradas. Quando um professor reconhecer seu mérito com moedas ou você resgatar uma vantagem, vai aparecer aqui.</p>
+    </div>
 
-    <a class="botao-secundario" href="/alunos/perfil">Voltar ao perfil</a>
+    <div class="acoes">
+        <a class="botao-secundario" href="/alunos/perfil">Voltar ao perfil</a>
+    </div>
 </div>
 </body>
 </html>

@@ -18,10 +18,12 @@
         Vantagem reativada.
     </p>
 
-    <a class="botao" href="/empresas/vantagens/cadastrar">Cadastrar nova vantagem</a>
-    <a class="botao-secundario" href="/empresas/perfil">Voltar ao perfil</a>
+    <div class="acoes">
+        <a class="botao" href="/empresas/vantagens/cadastrar">Cadastrar nova vantagem</a>
+        <a class="botao-secundario" href="/empresas/perfil">Voltar ao perfil</a>
+    </div>
 
-    <table class="tabela-extrato" th:if="${!vantagens.isEmpty()}" style="margin-top: 1.5rem;">
+    <table class="tabela-extrato" th:if="${!vantagens.isEmpty()}">
         <thead>
             <tr>
                 <th>Descrição</th>
@@ -37,23 +39,34 @@
                 <td th:text="${v.ativa} ? 'Ativa' : 'Desativada'"
                     th:class="${v.ativa} ? 'status-ok' : 'status-falha'">—</td>
                 <td>
-                    <a th:href="@{|/empresas/vantagens/${v.id}/editar|}">Editar</a>
-                    <form th:if="${v.ativa}" th:action="@{|/empresas/vantagens/${v.id}/desativar|}"
-                          method="POST" style="display:inline">
-                        <button type="submit" class="link-acao">Desativar</button>
-                    </form>
-                    <form th:unless="${v.ativa}" th:action="@{|/empresas/vantagens/${v.id}/ativar|}"
-                          method="POST" style="display:inline">
-                        <button type="submit" class="link-acao">Reativar</button>
-                    </form>
+                    <span class="acoes-linha">
+                        <a th:href="@{|/empresas/vantagens/${v.id}/editar|}">Editar</a>
+                        <form th:if="${v.ativa}" th:action="@{|/empresas/vantagens/${v.id}/desativar|}" method="POST">
+                            <button type="submit" class="link-acao">Desativar</button>
+                        </form>
+                        <form th:unless="${v.ativa}" th:action="@{|/empresas/vantagens/${v.id}/ativar|}" method="POST">
+                            <button type="submit" class="link-acao">Reativar</button>
+                        </form>
+                    </span>
                 </td>
             </tr>
         </tbody>
     </table>
 
-    <p th:if="${vantagens.isEmpty()}" class="aviso">
-        Você ainda não cadastrou vantagens. Clique em "Cadastrar nova vantagem".
-    </p>
+    <div th:if="${vantagens.isEmpty()}" class="vazio">
+        <div class="vazio-icone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="9" width="18" height="11" rx="1"/>
+                <path d="M3 13h18M12 9v11"/>
+                <path d="M9 9a2.5 2.5 0 010-5c2 0 3 2 3 5 0-3 1-5 3-5a2.5 2.5 0 010 5"/>
+            </svg>
+        </div>
+        <p class="vazio-titulo">Nenhuma vantagem ainda</p>
+        <p>Cadastre sua primeira vantagem para que os alunos comecem a resgatá-la com moedas.</p>
+        <div class="acoes">
+            <a class="botao" href="/empresas/vantagens/cadastrar">Cadastrar primeira vantagem</a>
+        </div>
+    </div>
 </div>
 </body>
 </html>

@@ -9,9 +9,15 @@
         Transferência realizada com sucesso.
     </p>
 
-    <p class="dados-saldo">
-        Saldo atual: <strong th:text="${professor.saldo}">0</strong> moedas.
-    </p>
+    <div class="saldo-card">
+        <div class="saldo-card-info">
+            <span class="saldo-card-label">Saldo atual</span>
+            <div class="saldo-card-valor">
+                <strong th:text="${professor.saldo}">0</strong>
+                <span>moedas</span>
+            </div>
+        </div>
+    </div>
 
     <table class="tabela-extrato" th:if="${!linhas.isEmpty()}">
         <thead>
@@ -32,9 +38,16 @@
         </tbody>
     </table>
 
-    <p th:if="${linhas.isEmpty()}" class="aviso">
-        Você ainda não realizou transferências.
-    </p>
+    <div th:if="${linhas.isEmpty()}" class="vazio">
+        <div class="vazio-icone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 2L11 13"/>
+                <path d="M22 2l-7 20-4-9-9-4z"/>
+            </svg>
+        </div>
+        <p class="vazio-titulo">Sem transferências</p>
+        <p>Você ainda não enviou moedas a nenhum aluno. Quando enviar, o histórico aparece aqui.</p>
+    </div>
 
     <div class="acoes">
         <a class="botao" href="/professores/transferir">Nova transferência</a>

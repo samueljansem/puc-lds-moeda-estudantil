@@ -1,0 +1,16 @@
+# RabbitMQ para o pipeline de notificações (outbox + fanout).
+# A app continua rodando no host via `./gradlew run`. Aqui sobe só o broker.
+# Painel de administração em http://localhost:15672 (guest/guest).
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: moeda-estudantil-rabbitmq
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # Management UI
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

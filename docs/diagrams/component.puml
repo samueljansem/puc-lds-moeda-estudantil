@@ -1,8 +1,10 @@
 @startuml component
-' Diagrama de Componentes — Sistema de Moeda Estudantil (Lab03S03 final)
+' Diagrama de Componentes — Sistema de Moeda Estudantil (Lab03S04)
 ' Reflete a arquitetura MVC implementada: navegador Thymeleaf →
 ' controllers Micronaut → serviços → DAOs (Micronaut Data JPA) → H2.
-' Notificação é interna (outbox em tabela), sem SMTP externo.
+' Notificações usam padrão Transactional Outbox: linha em PENDENTE
+' persistida na transação do resgate; drainer publica via RabbitMQ
+' (fanout) para listeners que simulam side-effects (e-mail + webhook).
 
 skinparam shadowing false
 skinparam componentStyle rectangle
@@ -61,9 +63,19 @@ package "Aplicação Micronaut (Java 21)" {
     [Templates HTML\n(layout, aluno-*, empresa-*,\nprofessor-*, admin-*, etc.)] as Views
   }
 
+  package "Mensageria (Outbox + Fanout)" {
+    [DrainadorNotificacoes\n(@Scheduled 2s)] as Drainer
+    [PublisherNotificacao\n(@RabbitClient)]  as Publisher
+    [ListenerEmail\n(@RabbitListener)]       as ListenerEmail
+    [ListenerWebhook\n(@RabbitListener)]     as ListenerWebhook
+    [AmqpTopologia\n(ChannelInitializer)]    as Topologia
+  }
+
 }
 
 database "Banco H2 (file mode)\n./data/moedaestudantil.mv.db" as BD
+
+queue "RabbitMQ\nexchange: notificacoes (fanout)\nqueues: notificacoes.email,\n         notificacoes.webhook" as Broker
 
 ' === IApiHttp — fornecida pelos controladores, requerida pelo Cliente Web ===
 interface "IApiHttp"        as IApiHttp
@@ -165,6 +177,21 @@ NotificacaoDAO        )-- IBanco
 TokenRecuperacaoDAO   )-- IBanco
 CredencialDAO         )-- IBanco
 
+' === Mensageria — Outbox + Fanout via RabbitMQ ===
+interface "AMQP\n(publish)" as IAmqpPub
+interface "AMQP\n(consume)" as IAmqpSub
+Broker -up- IAmqpPub
+Broker -up- IAmqpSub
+
+Drainer    )-- IRepo                : "le PENDENTE / FIFO"
+Drainer    )-- Publisher
+Publisher  )-- IAmqpPub              : "TCP/AMQP 5672"
+ListenerEmail   )-- IAmqpSub         : "TCP/AMQP 5672"
+ListenerWebhook )-- IAmqpSub         : "TCP/AMQP 5672"
+ListenerEmail   )-- IRepo            : "marcarEnviada (idempotente)"
+ListenerWebhook )-- IRepo            : "marcarEnviada (idempotente)"
+Topologia       )-- IAmqpPub         : "declara exchange/queues/bindings"
+
 ' Controllers → Views (template engine acionado pelo Micronaut)
 LoginController              .-> Views
 HomeController               .-> Views
@@ -186,19 +213,28 @@ note top of IApiHttp
 end note
 
 note right of ServicoNotificacao
-  Outbox interno: persiste cada
-  "envio" como linha em `notificacao`.
-  Sem SMTP externo (decisão de Fase 2
-  para simplificar demo).
-  US12 (falha de entrega) seria
-  modelada com status=FALHA.
+  Persiste cada "envio" como linha em
+  `notificacao` com status=PENDENTE,
+  na mesma transação JPA do resgate.
+  O drainer agendado publica no broker
+  e os listeners marcam ENVIADA.
+  Sem dual-write: o DB é a fonte da
+  verdade transacional; o broker é
+  apenas transporte.
+end note
+
+note bottom of Broker
+  Padrão Transactional Outbox + Fanout.
+  Sem DLQ — o retry vem do próprio
+  outbox: linhas PENDENTE são
+  republicadas no próximo tick (2s).
 end note
 
 note bottom of BD
   H2 em modo arquivo:
   `jdbc:h2:./data/moedaestudantil`.
   Migrations versionadas via Flyway
-  (V1 schema → V5 seed Lab03S03).
+  (V1 schema → V6 outbox).
 end note
 
 note top of IRepo

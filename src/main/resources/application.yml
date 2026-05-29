@@ -54,3 +54,12 @@ jpa:
         hbm2ddl:
           auto: validate   # entidades JPA precisam casar com o schema migrado
         show_sql: false
+
+rabbitmq:
+  # Default aponta pro broker do docker-compose. Override via env var.
+  uri: ${RABBITMQ_URI:`amqp://guest:guest@localhost:5672`}
+  # Auto-recovery garante que a app sobe sem o broker (degraded mode)
+  # e reconecta sozinha quando o broker voltar.
+  connection:
+    automatic-recovery: true
+    network-recovery-interval: 2000

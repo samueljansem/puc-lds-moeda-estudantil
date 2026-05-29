@@ -21,11 +21,13 @@ public class ServicoNotificacao {
     }
 
     public Notificacao enviar(String destinatario, String assunto, String corpo, String codigoReferencia) {
+        // Outbox: persiste em PENDENTE; o DrainadorNotificacoes publica no broker
+        // e os listeners marcam ENVIADA quando entregam.
         Notificacao n = new Notificacao(
                 destinatario,
                 assunto,
                 corpo,
-                StatusNotificacao.ENVIADA,
+                StatusNotificacao.PENDENTE,
                 codigoReferencia,
                 LocalDateTime.now()
         );

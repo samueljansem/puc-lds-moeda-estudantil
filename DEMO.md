@@ -8,6 +8,10 @@ precisar criar dados do zero. Tempo estimado: **5 minutos**.
 ## 1. Subir a aplicação
 
 ```bash
+# Broker para o pipeline de notificações
+docker compose up -d
+
+# Aplicação
 ./gradlew run
 ```
 
@@ -17,7 +21,8 @@ Aguarde a linha:
 INFO  io.micronaut.runtime.Micronaut - Startup completed in <N>ms. Server Running: http://localhost:8080
 ```
 
-Abra **<http://localhost:8080>** no navegador.
+Abra **<http://localhost:8080>** no navegador. O painel do RabbitMQ
+está em **<http://localhost:15672>** (guest / guest).
 
 > A primeira execução baixa Gradle 9.x + dependências (~1 min). Execuções
 > seguintes sobem em ~1.5s.
@@ -31,10 +36,10 @@ quatro usuários prontos:
 
 | Perfil         | Login              | Senha           |
 | -------------- | ------------------ | --------------- |
-| 🎓 Aluno       | `demo.aluno`       | `aluno1234`     |
-| 🏢 Empresa     | `demo.empresa`     | `empresa1234`   |
-| 🧑‍🏫 Professor   | `demo.professor`   | `prof1234`      |
-| 🛂 Admin       | `demo.admin`       | `admin1234`     |
+| 🎓 Aluno       | `demo.aluno`       | `1234`          |
+| 🏢 Empresa     | `demo.empresa`     | `1234`          |
+| 🧑‍🏫 Professor   | `demo.professor`   | `1234`          |
+| 🛂 Admin       | `demo.admin`       | `1234`          |
 
 Cinco instituições estão pré-cadastradas (PUC Minas, UFMG, CEFET-MG, UFOP,
 UNI-BH). `demo.professor` está vinculado à PUC Minas e nasce com **saldo
@@ -48,7 +53,7 @@ UNI-BH). `demo.professor` está vinculado à PUC Minas e nasce com **saldo
 ### 3.1 Fluxo do Aluno (≈ 2 min)
 
 1. **Login** → `http://localhost:8080/login`
-   - Login: `demo.aluno` · Senha: `aluno1234`
+   - Login: `demo.aluno` · Senha: `1234`
    - Após o login você cai em `/` e é redirecionado para `/alunos/perfil`.
 2. **Ver perfil** — confira nome, e-mail, CPF, RG, endereço, curso, instituição
    e saldo (= 0).
@@ -61,7 +66,7 @@ UNI-BH). `demo.professor` está vinculado à PUC Minas e nasce com **saldo
 
 ### 3.2 Fluxo da Empresa Parceira (≈ 1 min)
 
-1. **Login** com `demo.empresa` / `empresa1234`.
+1. **Login** com `demo.empresa` / `1234`.
 2. **Ver perfil** — nome ("Acme Demonstrações Ltda"), e-mail, CNPJ.
 3. **Editar perfil** — alterar o **nome** e/ou **e-mail**, salvar.
 4. **Logout**.
@@ -83,7 +88,7 @@ UNI-BH). `demo.professor` está vinculado à PUC Minas e nasce com **saldo
 
 ### 3.4 Fluxo do Professor — Transferir Moedas (≈ 2 min)
 
-1. **Login** com `demo.professor` / `prof1234`. Você vai para
+1. **Login** com `demo.professor` / `1234`. Você vai para
    `/professores/perfil`. Saldo inicial: **1.000 moedas**.
 2. **Transferir moedas** — clique em "Transferir moedas". Selecione
    _João Demonstração_ no dropdown (alunos da mesma instituição —
@@ -100,7 +105,7 @@ UNI-BH). `demo.professor` está vinculado à PUC Minas e nasce com **saldo
 
 ### 3.5 Fluxo do Aluno — Extrato, Catálogo e Resgate (≈ 3 min)
 
-1. **Login** com `demo.aluno` / `aluno1234`. Saldo: **200 moedas**
+1. **Login** com `demo.aluno` / `1234`. Saldo: **200 moedas**
    (recebidas no passo 3.4).
 2. **Ver extrato** — clique em "Extrato". A transferência aparece como
    "Recebido" com motivo.
@@ -116,7 +121,7 @@ UNI-BH). `demo.professor` está vinculado à PUC Minas e nasce com **saldo
 
 ### 3.6 Fluxo da Empresa Parceira — Vantagens e Resgates (≈ 2 min)
 
-1. **Login** com `demo.empresa` / `empresa1234`. Clique em "Minhas
+1. **Login** com `demo.empresa` / `1234`. Clique em "Minhas
    vantagens".
 2. As 3 vantagens demo aparecem (todas Ativa). Clique em "Cadastrar nova
    vantagem" e envie uma vantagem com descrição, custo e (opcional) foto
@@ -133,7 +138,7 @@ UNI-BH). `demo.professor` está vinculado à PUC Minas e nasce com **saldo
 
 ### 3.7 Fluxo do Admin — Concessão Semestral e Caixa Global (≈ 1 min)
 
-1. **Login** com `demo.admin` / `admin1234`. Você vai para
+1. **Login** com `demo.admin` / `1234`. Você vai para
    `/admin/inicio`.
 2. **Conceder semestre** — clique no link, depois em "Conceder 1.000
    moedas a todos os professores". A tabela mostra o `demo.professor`
@@ -236,8 +241,8 @@ rm -rf data/
 ./gradlew run
 ```
 
-As 5 migrations rodam de novo (`V1` schema, `V2` instituições, `V3`
-demo Lab03S02, `V4` schema Lab03S03, `V5` seed Lab03S03).
+As 6 migrations rodam de novo (`V1` schema, `V2` instituições, `V3`
+demo Lab03S02, `V4` schema Lab03S03, `V5` seed Lab03S03, `V6` outbox).
 
 ---
 
@@ -247,5 +252,46 @@ demo Lab03S02, `V4` schema Lab03S03, `V5` seed Lab03S03).
 ./gradlew test
 ```
 
-Resultado esperado: **`BUILD SUCCESSFUL`** com ~30 testes (ver `README.md`
+Resultado esperado: **`BUILD SUCCESSFUL`** com ~44 testes (ver `README.md`
 seção Testes para o que cada classe cobre).
+
+---
+
+## 8. RabbitMQ — *killer demo* de mensageria
+
+Esse é o roteiro pra mostrar o padrão **Transactional Outbox** ao vivo —
+o sistema continua funcionando mesmo com o broker fora do ar.
+
+### 8.1. Fluxo normal (broker ligado)
+
+1. Logar como `demo.aluno` e resgatar uma vantagem.
+2. Cupom aparece **imediatamente** na tela (caminho síncrono — débito de
+   saldo, geração de UUID, persistência do `Resgate`).
+3. Abrir `/notificacoes` em outra aba — as duas notificações aparecem
+   inicialmente com badge cinza **Pendente**.
+4. Em ~2 segundos, o drainer publica no exchange `notificacoes` e os dois
+   listeners marcam **Enviada** (badge verde).
+5. Conferir no console da aplicação:
+   ```
+   [EMAIL-SIM]   to=demo.aluno@... subject="Cupom de resgate — ..." code=<uuid>
+   [WEBHOOK-SIM] POST /parceira/notify body=(id:42, codigo:"<uuid>", assunto:"...")
+   ```
+6. No painel <http://localhost:15672> → *Queues*: as filas
+   `notificacoes.email` e `notificacoes.webhook` mostram throughput.
+
+### 8.2. Degraded mode (broker fora do ar)
+
+1. `docker compose pause rabbitmq` — broker congelado.
+2. Logar como `demo.aluno`, resgatar uma vantagem.
+3. Cupom continua aparecendo **imediatamente** (caminho síncrono inalterado).
+4. `/notificacoes` mostra as duas linhas em **Pendente** — e ficam assim.
+5. No console: `WARN Broker indisponível ao publicar id=N. Republicação no
+   próximo tick.` aparecendo a cada 2 segundos.
+6. `docker compose unpause rabbitmq` — broker volta.
+7. Em até 2 segundos, as linhas pendentes viram **Enviada** e os logs
+   `[EMAIL-SIM]` / `[WEBHOOK-SIM]` aparecem.
+
+**O que isso prova:** o `INSERT` na tabela `notificacao` é a fonte da
+verdade transacional; o RabbitMQ é apenas o transporte. Nenhuma
+mensagem é perdida se o broker cair — o drainer republica
+automaticamente quando ele voltar.

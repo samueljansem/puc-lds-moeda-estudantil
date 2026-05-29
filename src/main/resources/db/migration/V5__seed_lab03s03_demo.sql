@@ -1,9 +1,9 @@
 -- Lab03S03 — seed de demonstração
 -- Adiciona:
---   - Admin (`demo.admin` / `admin1234`) — só existe em `credencial`; o admin
+--   - Admin (`demo.admin` / `1234`) — só existe em `credencial`; o admin
 --     não tem perfil pessoal, ele só aciona a tela de concessão semestral e
 --     vê a caixa global de notificações.
---   - Professor (`demo.professor` / `prof1234`) — vinculado à PUC Minas,
+--   - Professor (`demo.professor` / `1234`) — vinculado à PUC Minas,
 --     departamento "Ciência da Computação", saldo inicial 1000 (FR-004).
 --   - 3 vantagens demo cadastradas pela `demo.empresa`, sem foto (foto é
 --     opcional no schema; o avaliador faz upload pela UI).
@@ -13,11 +13,11 @@
 
 -- === Admin demo ===
 INSERT INTO credencial (login, senha_hash, tipo_ator) VALUES
-    ('demo.admin', '$2a$12$HfqnbC0JeyO0TnS/ntLZWuFl7QDQPscby.I9mX8JBJFHIP0eIwR7e', 'ADMIN');
+    ('demo.admin', '$2a$12$o12A9AQzpMNF/3pU8TJggOvJKGNLRuEP9VXYp2wAv0NaulDPWBEeS', 'ADMIN');
 
 -- === Professor demo: Maria Orientadora, PUC Minas ===
 INSERT INTO credencial (login, senha_hash, tipo_ator) VALUES
-    ('demo.professor', '$2a$12$RalKH6G5z3X1gPoS0jSkXus14vHo2sqYbY1kXV88yqWxk9NlFIIfS', 'PROFESSOR');
+    ('demo.professor', '$2a$12$zfl1l.rvBHZKa6ao1brYVueBJAZCs9QAGbRxQd6a1MKzOCEbF/rgC', 'PROFESSOR');
 
 INSERT INTO usuario (nome, email, credencial_id, tipo, ativo)
 SELECT 'Maria Orientadora',

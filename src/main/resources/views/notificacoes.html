@@ -2,7 +2,7 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
 <body>
-<div th:fragment="conteudo" class="card">
+<div th:fragment="conteudo" class="card card--wide">
     <h1>Minhas Notificações</h1>
 
     <p class="muted">
@@ -22,16 +22,25 @@
             <tr th:each="n : ${notificacoes}">
                 <td th:text="${#temporals.format(n.criadaEm, 'dd/MM/yyyy HH:mm')}">—</td>
                 <td th:text="${n.assunto}">—</td>
-                <td th:text="${n.status}"
-                    th:class="${n.status.name() == 'ENVIADA'} ? 'status-ok' : 'status-falha'">—</td>
+                <td>
+                    <span th:text="${n.status.name() == 'PENDENTE'} ? 'Pendente' : 'Enviada'"
+                          th:class="${n.status.name() == 'ENVIADA'} ? 'status-ok' : 'status-pendente'">—</span>
+                </td>
                 <td><pre class="corpo-notif" th:text="${n.corpo}">—</pre></td>
             </tr>
         </tbody>
     </table>
 
-    <p th:if="${notificacoes.isEmpty()}" class="aviso">
-        Você ainda não recebeu notificações.
-    </p>
+    <div th:if="${notificacoes.isEmpty()}" class="vazio">
+        <div class="vazio-icone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 18V11a6 6 0 10-12 0v7l-2 2h16z"/>
+                <path d="M10 22a2 2 0 004 0"/>
+            </svg>
+        </div>
+        <p class="vazio-titulo">Caixa vazia</p>
+        <p>Você ainda não recebeu notificações por e-mail.</p>
+    </div>
 </div>
 </body>
 </html>

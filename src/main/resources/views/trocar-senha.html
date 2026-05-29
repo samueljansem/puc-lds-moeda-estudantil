@@ -2,7 +2,7 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
 <body>
-<div th:fragment="conteudo" class="card">
+<div th:fragment="conteudo" class="card card--narrow">
     <h1>Trocar Senha</h1>
 
     <p th:if="${sucesso}" class="alerta-sucesso">

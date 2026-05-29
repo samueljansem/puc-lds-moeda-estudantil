@@ -5,9 +5,15 @@
 <div th:fragment="conteudo" class="card">
     <h1>Transferir Moedas</h1>
 
-    <p class="dados-saldo">
-        Saldo atual: <strong th:text="${professor.saldo}">0</strong> moedas.
-    </p>
+    <div class="saldo-card">
+        <div class="saldo-card-info">
+            <span class="saldo-card-label">Saldo disponível</span>
+            <div class="saldo-card-valor">
+                <strong th:text="${professor.saldo}">0</strong>
+                <span>moedas</span>
+            </div>
+        </div>
+    </div>
 
     <p th:if="${erro == 'saldoInsuficiente'}" class="alerta-erro">
         Saldo insuficiente para realizar a transferência.
@@ -42,9 +48,21 @@
         <a class="botao-secundario" href="/professores/perfil">Cancelar</a>
     </form>
 
-    <p th:if="${alunos.isEmpty()}" class="aviso">
-        Não há alunos cadastrados na sua instituição ainda.
-    </p>
+    <div th:if="${alunos.isEmpty()}" class="vazio">
+        <div class="vazio-icone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="9" cy="8" r="3"/>
+                <path d="M3 20c0-3 3-5 6-5s6 2 6 5"/>
+                <circle cx="17" cy="8" r="2.5"/>
+                <path d="M14 20c0-2 2-4 5-4"/>
+            </svg>
+        </div>
+        <p class="vazio-titulo">Sem destinatários</p>
+        <p>Ainda não há alunos cadastrados na sua instituição para receber moedas.</p>
+        <div class="acoes">
+            <a class="botao-secundario" href="/professores/perfil">Voltar ao perfil</a>
+        </div>
+    </div>
 </div>
 </body>
 </html>

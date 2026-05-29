@@ -4,14 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${titulo} + ' — Moeda Estudantil'">Moeda Estudantil</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
     <header class="topo">
-        <a href="/" class="marca">Moeda Estudantil</a>
+        <a href="/" class="marca">
+            <svg viewBox="0 0 40 40" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="moeda" cx="30%" cy="28%">
+                        <stop offset="0%" stop-color="#6366f1"/>
+                        <stop offset="100%" stop-color="#4338ca"/>
+                    </radialGradient>
+                </defs>
+                <circle cx="20" cy="20" r="18" fill="url(#moeda)" stroke="#ffffff" stroke-opacity="0.32" stroke-width="1.5"/>
+                <text x="20" y="27" text-anchor="middle" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="#fff">M</text>
+            </svg>
+            Moeda Estudantil
+        </a>
         <th:block th:with="autenticado=${security != null}">
             <nav th:if="${autenticado}">
-                <span class="usuario" th:text="${security.attributes != null ? security.attributes['username'] : security.name}">usuario</span>
+                <span class="usuario" th:text="${security.name}">usuario</span>
                 <a href="/">Meu Perfil</a>
                 <form action="/logout" method="POST" class="form-logout">
                     <button type="submit">Sair</button>
@@ -28,7 +43,7 @@
         <div th:replace="${conteudo}"></div>
     </main>
     <footer>
-        <p>Sistema de Moeda Estudantil — Lab03 LDS / PUC Minas</p>
+        <p>Sistema de Moeda Estudantil — PUC Minas</p>
     </footer>
 </body>
 </html>

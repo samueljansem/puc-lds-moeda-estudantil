@@ -118,6 +118,7 @@ através de uma moeda virtual.
 - **ORM:** Micronaut Data JPA + Hibernate ORM 6.6 (com herança `JOINED`)
 - **Migrations:** Flyway
 - **Banco:** H2 2.3 em modo arquivo (`./data/moedaestudantil.mv.db`)
+- **Mensageria:** RabbitMQ 3 (via `micronaut-rabbitmq`) — outbox + fanout
 - **Autenticação:** Micronaut Security + Session
 - **Hash de senha:** BCrypt (`at.favre.lib:bcrypt`)
 
@@ -177,8 +178,7 @@ cuja PK é também FK para `usuario.id`.
 ### Pré-requisitos
 
 - **Java JDK 21** (ou superior)
-- Nada mais. H2 é embedded; Gradle Wrapper baixa a versão certa do Gradle
-  automaticamente.
+- **Docker** + **Docker Compose** (apenas para o RabbitMQ — H2 continua embedded).
 
 ### Passos
 
@@ -187,18 +187,29 @@ cuja PK é também FK para `usuario.id`.
 git clone <url-do-repo>
 cd puc-lds-lab-03
 
-# 2. Subir a aplicação (primeira execução baixa Gradle 9.x e dependências)
+# 2. Subir o RabbitMQ (broker para o pipeline de notificações)
+docker compose up -d
+
+# 3. Subir a aplicação (primeira execução baixa Gradle 9.x e dependências)
 ./gradlew run
 ```
 
-A aplicação fica disponível em **`http://localhost:8080`**.
+A aplicação fica disponível em **`http://localhost:8080`** e o painel de
+administração do RabbitMQ em **`http://localhost:15672`** (guest / guest).
 
 > [!NOTE]
 > O banco H2 é criado automaticamente em `./data/moedaestudantil.mv.db`
 > no primeiro `run`. As migrations Flyway aplicam: V1 schema base, V2
 > instituições, V3 seed Lab03S02 (aluno + empresa demo), V4 schema
 > Lab03S03 (professor, vantagem, transferência, resgate, notificação,
-> token), V5 seed Lab03S03 (admin + professor + 3 vantagens demo).
+> token), V5 seed Lab03S03 (admin + professor + 3 vantagens demo),
+> V6 outbox (notificação entra em `PENDENTE`).
+
+> [!TIP]
+> A aplicação inicia mesmo **sem** o RabbitMQ ligado (degraded mode). O
+> drainer aguarda o broker reconectar; as notificações ficam em `PENDENTE`
+> e são entregues assim que o broker volta. Útil para demonstrar o padrão
+> Transactional Outbox.
 
 ### Para zerar o banco
 
@@ -209,7 +220,41 @@ rm -rf data/
 
 ### Variáveis de Ambiente
 
-Não há. Toda a configuração está em `src/main/resources/application.yml`.
+| Variável        | Default                                  | Descrição                  |
+| --------------- | ---------------------------------------- | -------------------------- |
+| `RABBITMQ_URI`  | `amqp://guest:guest@localhost:5672`      | URI AMQP do broker         |
+
+---
+
+## 📬 Mensageria — RabbitMQ
+
+O processamento das notificações usa **RabbitMQ** seguindo o padrão
+**Transactional Outbox**:
+
+1. **Produtor**: `ServicoNotificacao` persiste a linha em
+   `notificacao` com status `PENDENTE`, dentro da mesma transação JPA
+   que realiza o resgate (zero risco de dual-write).
+2. **Drainer** (`DrainadorNotificacoes`, `@Scheduled(fixedDelay = "2s")`):
+   lê pendentes em ordem FIFO e publica no exchange `notificacoes`
+   (tipo *fanout*). Se o broker estiver indisponível, sai silenciosamente
+   — o próximo tick republica.
+3. **Consumers** em fan-out (mesma mensagem em duas filas independentes):
+   - `notificacoes.email` → `ListenerEmail` simula entrega por e-mail.
+   - `notificacoes.webhook` → `ListenerWebhook` simula POST ao sistema
+     da empresa parceira.
+4. **Idempotência**: o `UPDATE` que marca `ENVIADA` é condicional
+   (`WHERE status = 'PENDENTE'`). Mensagens duplicadas viram no-op no
+   banco e ack normal no broker.
+
+A topologia (exchange, queues, bindings) é declarada em código por
+`AmqpTopologia` (uma classe `ChannelInitializer`), idempotente e
+auditável.
+
+> [!NOTE]
+> Não usamos DLQ. O *retry* vem do próprio outbox: enquanto a linha
+> estiver em `PENDENTE`, o drainer continua tentando publicar a cada
+> 2 segundos. Em caso de bug no consumer, a re-publicação acontece
+> automaticamente.
 
 ---
 
@@ -268,10 +313,10 @@ puc-lds-lab-03/
 
 | Perfil    | Login             | Senha           | Após o login vai para     |
 | --------- | ----------------- | --------------- | ------------------------- |
-| Aluno     | `demo.aluno`      | `aluno1234`     | `/alunos/perfil`          |
-| Empresa   | `demo.empresa`    | `empresa1234`   | `/empresas/perfil`        |
-| Professor | `demo.professor`  | `prof1234`      | `/professores/perfil`     |
-| Admin     | `demo.admin`      | `admin1234`     | `/admin/inicio`           |
+| Aluno     | `demo.aluno`      | `1234`          | `/alunos/perfil`          |
+| Empresa   | `demo.empresa`    | `1234`          | `/empresas/perfil`        |
+| Professor | `demo.professor`  | `1234`          | `/professores/perfil`     |
+| Admin     | `demo.admin`      | `1234`          | `/admin/inicio`           |
 
 ### Fluxo de cadastro e login (do zero)
 

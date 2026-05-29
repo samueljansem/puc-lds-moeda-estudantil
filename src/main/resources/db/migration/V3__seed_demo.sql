@@ -3,14 +3,14 @@
 -- a aplicação sem precisar passar pelo fluxo de cadastro primeiro.
 --
 -- Credenciais:
---   Aluno   — login: demo.aluno    senha: aluno1234
---   Empresa — login: demo.empresa  senha: empresa1234
+--   Aluno   — login: demo.aluno    senha: 1234
+--   Empresa — login: demo.empresa  senha: 1234
 --
 -- Hashes BCrypt foram gerados com cost=12 (mesmo cost usado em ServicoCadastro).
 
 -- === Aluno demo: João Demonstração, PUC Minas ===
 INSERT INTO credencial (login, senha_hash, tipo_ator) VALUES
-    ('demo.aluno', '$2a$12$AN6QHezvi27j1MsnGM1jxuwFFE1DfNPDzIvpfyFU9W.DV96rmDIOu', 'ALUNO');
+    ('demo.aluno', '$2a$12$/WB8H60VFu83a2wGnXa6gOyixCFr.7n8dg/9ExPMyJol8Okn9FKlm', 'ALUNO');
 
 INSERT INTO usuario (nome, email, credencial_id, tipo)
 SELECT 'João Demonstração',
@@ -34,7 +34,7 @@ SELECT u.id,
 
 -- === Empresa parceira demo: Acme Demonstrações ===
 INSERT INTO credencial (login, senha_hash, tipo_ator) VALUES
-    ('demo.empresa', '$2a$12$DaX9n1zZyRSN.orhYXW5.O.mgT0wlDwIfRkITZ4VfJ8HYxT5sume.', 'EMPRESA_PARCEIRA');
+    ('demo.empresa', '$2a$12$Yx96fmeXYVvXYNjzvBrmnetNbObcwng8h33kGkFTyxt/sU5j6gvUq', 'EMPRESA_PARCEIRA');
 
 INSERT INTO usuario (nome, email, credencial_id, tipo)
 SELECT 'Acme Demonstrações Ltda',

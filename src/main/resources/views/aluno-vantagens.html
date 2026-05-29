@@ -2,12 +2,18 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout :: pagina(${titulo}, ~{::conteudo})}">
 <body>
-<div th:fragment="conteudo" class="card">
+<div th:fragment="conteudo" class="card card--wide">
     <h1>Catálogo de Vantagens</h1>
 
-    <p class="dados-saldo">
-        Seu saldo: <strong th:text="${aluno.saldo}">0</strong> moedas.
-    </p>
+    <div class="saldo-card">
+        <div class="saldo-card-info">
+            <span class="saldo-card-label">Seu saldo</span>
+            <div class="saldo-card-valor">
+                <strong th:text="${aluno.saldo}">0</strong>
+                <span>moedas</span>
+            </div>
+        </div>
+    </div>
 
     <p th:if="${erro == 'saldoInsuficiente'}" class="alerta-erro">
         Saldo insuficiente para resgatar esta vantagem.
@@ -44,17 +50,26 @@
                 <h3 th:text="${v.descricao}">Descrição</h3>
                 <p class="custo" th:text="${v.custo + ' moedas'}">0 moedas</p>
                 <p class="empresa" th:text="${v.empresa.nome}">Empresa</p>
-                <form th:action="@{|/alunos/vantagens/${v.id}/resgatar|}" method="POST"
-                      style="margin-top: 0.5rem;">
-                    <button type="submit" th:disabled="${aluno.saldo < v.custo}">Resgatar</button>
+                <form th:action="@{|/alunos/vantagens/${v.id}/resgatar|}" method="POST">
+                    <button type="submit" th:disabled="${aluno.saldo &lt; v.custo}">Resgatar</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <p th:if="${vantagens.isEmpty()}" class="aviso">
-        Nenhuma vantagem encontrada com os filtros aplicados.
-    </p>
+    <div th:if="${vantagens.isEmpty()}" class="vazio">
+        <div class="vazio-icone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"/>
+                <path d="M21 21l-4.35-4.35"/>
+            </svg>
+        </div>
+        <p class="vazio-titulo">Nenhuma vantagem encontrada</p>
+        <p>Tente afrouxar os filtros — talvez aumentar o custo máximo ou remover a empresa selecionada.</p>
+        <div class="acoes">
+            <a class="botao-secundario" href="/alunos/vantagens">Limpar filtros</a>
+        </div>
+    </div>
 </div>
 </body>
 </html>

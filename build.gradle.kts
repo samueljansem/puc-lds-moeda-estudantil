@@ -20,6 +20,7 @@ dependencies {
     annotationProcessor("io.micronaut.validation:micronaut-validation-processor")
     implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
     implementation("io.micronaut.flyway:micronaut-flyway")
+    implementation("io.micronaut.rabbitmq:micronaut-rabbitmq")
     implementation("io.micronaut.security:micronaut-security-session")
     implementation("io.micronaut.serde:micronaut-serde-jackson")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
