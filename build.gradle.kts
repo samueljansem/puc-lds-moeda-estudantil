@@ -44,8 +44,12 @@ application {
 }
 
 java {
-    sourceCompatibility = JavaVersion.toVersion("21")
-    targetCompatibility = JavaVersion.toVersion("21")
+    // Pino a toolchain em 21 para que compilação e testes rodem sempre nessa
+    // versão, independentemente do JAVA_HOME do ambiente (que pode apontar
+    // para um JDK mais novo). Sem isso, micronaut-test pula testes silenciosamente.
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 

@@ -5,20 +5,18 @@ import br.puc.moedaestudantil.model.EmpresaParceira;
 import br.puc.moedaestudantil.model.TipoAtor;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MicronautTest(transactional = false)
+@MicronautTest
 class EmpresaParceiraDAOTest {
 
     @Inject EmpresaParceiraDAO empresaDAO;
     @Inject CredencialDAO credencialDAO;
 
     @Test
-    @Transactional
     void existsByCnpj_detectsDuplicate() {
         Credencial c = credencialDAO.save(new Credencial("login.empresa", "hash", TipoAtor.EMPRESA_PARCEIRA));
         EmpresaParceira e = new EmpresaParceira("Acme", "acme@x.com", c, "12345678000199");

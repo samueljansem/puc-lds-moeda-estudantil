@@ -97,10 +97,13 @@ UNI-BH). `demo.professor` está vinculado à PUC Minas e nasce com **saldo
 3. Redireciona para `/professores/extrato` com mensagem de sucesso. A
    transferência aparece na tabela (data, destinatário, valor negativo,
    motivo).
-4. **Validar restrições** — tente transferir com motivo em branco
+4. **Notificações do professor** — clique em "Notificações". O e-mail
+   "Confirmação: você enviou 200 moedas" está lá, com o aluno, o motivo e
+   o saldo restante (template do professor — Lab04S01).
+5. **Validar restrições** — tente transferir com motivo em branco
    (rejeitado) e com valor > saldo (rejeitado com mensagem pt-BR
    "Saldo insuficiente").
-5. **Lista de alunos** (US10) — clique em "Alunos da instituição" no
+6. **Lista de alunos** (US10) — clique em "Alunos da instituição" no
    perfil. Veja os alunos da PUC Minas com nome, curso, e-mail e saldo.
 
 ### 3.5 Fluxo do Aluno — Extrato, Catálogo e Resgate (≈ 3 min)

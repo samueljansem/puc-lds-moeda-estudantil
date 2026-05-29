@@ -6,13 +6,12 @@ import br.puc.moedaestudantil.model.Instituicao;
 import br.puc.moedaestudantil.model.TipoAtor;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MicronautTest(transactional = false)
+@MicronautTest
 class AlunoDAOTest {
 
     @Inject AlunoDAO alunoDAO;
@@ -20,7 +19,6 @@ class AlunoDAOTest {
     @Inject InstituicaoDAO instituicaoDAO;
 
     @Test
-    @Transactional
     void existsByCpf_falseWhenAbsent_trueWhenPresent() {
         Instituicao inst = instituicaoDAO.findAll().iterator().next();
         Credencial c = credencialDAO.save(new Credencial("login.cpf", "hash", TipoAtor.ALUNO));
@@ -33,7 +31,6 @@ class AlunoDAOTest {
     }
 
     @Test
-    @Transactional
     void existsByEmail_detectsDuplicate() {
         Instituicao inst = instituicaoDAO.findAll().iterator().next();
         Credencial c = credencialDAO.save(new Credencial("login.email", "hash", TipoAtor.ALUNO));

@@ -14,7 +14,6 @@ import br.puc.moedaestudantil.model.TipoAtor;
 import br.puc.moedaestudantil.model.TokenRecuperacao;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -25,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MicronautTest(transactional = false)
+@MicronautTest
 class ServicoRecuperacaoSenhaTest {
 
     @Inject ServicoRecuperacaoSenha servico;
@@ -36,9 +35,8 @@ class ServicoRecuperacaoSenhaTest {
     @Inject NotificacaoDAO notificacaoDAO;
 
     @Test
-    @Transactional
     void solicitarGeraTokenEEnviaNotificacaoQuandoEmailExiste() {
-        Aluno aluno = criarAluno("rec.aluno1", "11122233300", "rec.aluno1@a.com");
+        Aluno aluno = criarAluno("rec.aluno1", "99988877766", "rec.aluno1@a.com");
 
         servico.solicitar(aluno.getEmail());
 
@@ -52,7 +50,6 @@ class ServicoRecuperacaoSenhaTest {
     }
 
     @Test
-    @Transactional
     void solicitarEmEmailDesconhecidoNaoGeraTokenNemNotificacao() {
         servico.solicitar("desconhecido-" + System.nanoTime() + "@nopes.com");
         // Nenhuma exceção; nenhum token novo criado para um e-mail que não existe.
@@ -62,7 +59,6 @@ class ServicoRecuperacaoSenhaTest {
     }
 
     @Test
-    @Transactional
     void redefinirTrocaSenhaEEMarcaTokenComoUsado() {
         Aluno aluno = criarAluno("rec.aluno2", "22233344400", "rec.aluno2@a.com");
         servico.solicitar(aluno.getEmail());
@@ -79,7 +75,6 @@ class ServicoRecuperacaoSenhaTest {
     }
 
     @Test
-    @Transactional
     void redefinirRejeitaTokenJaUsado() {
         Aluno aluno = criarAluno("rec.aluno3", "33344455500", "rec.aluno3@a.com");
         servico.solicitar(aluno.getEmail());
@@ -93,7 +88,6 @@ class ServicoRecuperacaoSenhaTest {
     }
 
     @Test
-    @Transactional
     void redefinirRejeitaTokenExpirado() {
         Aluno aluno = criarAluno("rec.aluno4", "44455566600", "rec.aluno4@a.com");
         TokenRecuperacao tr = new TokenRecuperacao(
@@ -108,7 +102,6 @@ class ServicoRecuperacaoSenhaTest {
     }
 
     @Test
-    @Transactional
     void redefinirRejeitaSenhaCurta() {
         Aluno aluno = criarAluno("rec.aluno5", "55566677700", "rec.aluno5@a.com");
         servico.solicitar(aluno.getEmail());

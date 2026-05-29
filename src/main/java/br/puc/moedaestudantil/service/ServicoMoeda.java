@@ -21,15 +21,18 @@ public class ServicoMoeda {
     private final AlunoDAO alunoDAO;
     private final TransferenciaMoedaDAO transferenciaDAO;
     private final ServicoNotificacao servicoNotificacao;
+    private final TemplatesEmailMoeda templates;
 
     public ServicoMoeda(ProfessorDAO professorDAO,
                         AlunoDAO alunoDAO,
                         TransferenciaMoedaDAO transferenciaDAO,
-                        ServicoNotificacao servicoNotificacao) {
+                        ServicoNotificacao servicoNotificacao,
+                        TemplatesEmailMoeda templates) {
         this.professorDAO = professorDAO;
         this.alunoDAO = alunoDAO;
         this.transferenciaDAO = transferenciaDAO;
         this.servicoNotificacao = servicoNotificacao;
+        this.templates = templates;
     }
 
     @Transactional
@@ -46,6 +49,13 @@ public class ServicoMoeda {
         Aluno aluno = alunoDAO.findById(alunoId)
                 .orElseThrow(() -> new IllegalArgumentException("Aluno não encontrado."));
 
+        if (!aluno.getInstituicao().getId().equals(professor.getInstituicao().getId())) {
+            throw new IllegalArgumentException("O aluno não pertence à sua instituição.");
+        }
+        if (!aluno.isAtivo()) {
+            throw new IllegalArgumentException("Não é possível enviar moedas para um aluno inativo.");
+        }
+
         if (professor.getSaldo() < valor) {
             throw new SaldoInsuficienteException(professor.getSaldo(), valor);
         }
@@ -55,19 +65,16 @@ public class ServicoMoeda {
         professorDAO.update(professor);
         alunoDAO.update(aluno);
 
+        String motivoLimpo = motivo.trim();
         TransferenciaMoeda transf = transferenciaDAO.save(new TransferenciaMoeda(
-                professor, aluno, valor, motivo.trim(), LocalDateTime.now()
+                professor, aluno, valor, motivoLimpo, LocalDateTime.now()
         ));
 
-        servicoNotificacao.enviar(
-                aluno.getEmail(),
-                "Você recebeu " + valor + " moedas",
-                "Olá, " + aluno.getNome() + "!\n\n" +
-                        "O(a) professor(a) " + professor.getNome() + " enviou " + valor +
-                        " moedas para você.\n\n" +
-                        "Motivo: " + motivo.trim() + "\n\n" +
-                        "Seu novo saldo é de " + aluno.getSaldo() + " moedas."
-        );
+        MensagemEmail aoAluno = templates.recebimentoAluno(professor, aluno, valor, motivoLimpo);
+        servicoNotificacao.enviar(aluno.getEmail(), aoAluno.assunto(), aoAluno.corpo());
+
+        MensagemEmail aoProfessor = templates.confirmacaoProfessor(professor, aluno, valor, motivoLimpo);
+        servicoNotificacao.enviar(professor.getEmail(), aoProfessor.assunto(), aoProfessor.corpo());
 
         return transf;
     }

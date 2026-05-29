@@ -6,7 +6,8 @@ Um professor deseja recompensar um aluno por bom comportamento, participação
 em aula ou mérito acadêmico. O professor faz login, seleciona o aluno, escolhe
 quantas moedas enviar, digita um motivo obrigatório descrevendo por que o
 aluno está sendo reconhecido e submete a transferência. O aluno recebe uma
-notificação por e-mail em pt-BR sobre as moedas e o motivo.
+notificação por e-mail em pt-BR sobre as moedas e o motivo, e o professor
+recebe um e-mail de confirmação do envio.
 
 **Por que essa prioridade**: Esta é a proposta de valor central do sistema —
 sem ela, não há reconhecimento de mérito, não há moedas chegando aos alunos
@@ -357,6 +358,11 @@ e-mail deve ser entregue com sucesso.
   remanescente, elas NÃO o zeram.
 - Professor tenta transferir para um aluno que não pertence ao sistema: a
   transferência é rejeitada com uma mensagem em pt-BR.
+- Professor tenta transferir para um aluno de outra instituição: a
+  transferência é rejeitada com uma mensagem em pt-BR (um professor só
+  reconhece alunos da sua própria instituição).
+- Professor tenta transferir para um aluno inativo (cadastro desativado):
+  a transferência é rejeitada com uma mensagem em pt-BR.
 - Empresa parceira exclui ou desativa uma vantagem enquanto um aluno está
   visualizando-a: a tentativa de resgate é rejeitada com uma mensagem em
   pt-BR "vantagem indisponível".
@@ -388,8 +394,9 @@ e-mail deve ser entregue com sucesso.
   um motivo não vazio for fornecido.
 - **FR-006**: Em uma transferência bem-sucedida, o sistema DEVE
   atomicamente debitar o saldo do professor, creditar o saldo do aluno,
-  registrar a transação e enviar uma notificação por e-mail em pt-BR ao
-  aluno contendo o motivo.
+  registrar a transação e enviar notificações por e-mail em pt-BR: ao
+  aluno (recebimento, contendo o motivo) e ao professor (confirmação do
+  envio, contendo o motivo e o saldo restante).
 - **FR-007**: Alunos e professores DEVEM ser capazes de consultar seu
   extrato, exibindo seu saldo atual e uma lista cronológica de transações
   (professor: transferências enviadas; aluno: moedas recebidas e resgates
@@ -454,8 +461,9 @@ e-mail deve ser entregue com sucesso.
 
 - **SC-001**: Um professor consegue completar uma transferência de moedas
   — do login à confirmação — em menos de 2 minutos na primeira tentativa.
-- **SC-002**: 100% das transferências de moedas disparam um e-mail de
-  notificação ao aluno em até 1 minuto após a confirmação.
+- **SC-002**: 100% das transferências de moedas disparam e-mails de
+  notificação ao aluno (recebimento) e ao professor (confirmação de
+  envio) em até 1 minuto após a confirmação.
 - **SC-003**: Um aluno consegue completar um resgate — do login ao
   recebimento do e-mail de cupom — em menos de 3 minutos na primeira
   tentativa.

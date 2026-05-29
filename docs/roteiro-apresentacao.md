@@ -148,7 +148,9 @@ public TransferenciaMoeda transferir(Long profId, Long alunoId, int valor, Strin
     professor.setSaldo(professor.getSaldo() - valor);
     aluno.setSaldo(aluno.getSaldo() + valor);
     transferenciaDAO.save(new TransferenciaMoeda(...));
-    servicoNotificacao.enviar(aluno.getEmail(), ...);  // grava na outbox
+    // dois templates (Lab04S01): recebimento (aluno) + confirmação (professor)
+    servicoNotificacao.enviar(aluno.getEmail(), templates.recebimentoAluno(...));
+    servicoNotificacao.enviar(professor.getEmail(), templates.confirmacaoProfessor(...));
     return transf;
 }
 ```
@@ -164,8 +166,8 @@ Seguir o roteiro de [DEMO.md](DEMO.md). Cobertura mínima:
 
 1. **Login dos 4 papéis** (demo.aluno, demo.professor, demo.empresa,
    demo.admin) → redirect correto por role.
-2. **Professor transfere 200 moedas** → notificação cai no `/notificacoes`
-   do aluno.
+2. **Professor transfere 200 moedas** → notificações caem no
+   `/notificacoes` do aluno (recebimento) e do professor (confirmação).
 3. **Aluno navega o catálogo, filtra por custo, resgata uma vantagem** →
    recebe cupom UUID; saldo cai; cupom aparece em `/alunos/cupons`.
 4. **Empresa vê confirmação** com o mesmo código de verificação em

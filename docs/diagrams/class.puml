@@ -1,8 +1,9 @@
 @startuml class
-' Diagrama de Classes — Sistema de Moeda Estudantil (Lab03S03 final)
+' Diagrama de Classes — Sistema de Moeda Estudantil (atualizado Lab04S01)
 ' Reflete o modelo de domínio realmente implementado: TransferenciaMoeda
 ' e Resgate como entidades separadas (decisão de Fase 2/3), Notificacao
-' como outbox interno, TokenRecuperacao para reset.
+' como outbox interno, TokenRecuperacao para reset. Lab04S01: a transferência
+' dispara duas notificações (aluno + professor) via MensagemEmail.
 
 skinparam shadowing false
 skinparam classAttributeIconSize 0
@@ -16,8 +17,8 @@ enum TipoAtor {
 }
 
 enum StatusNotificacao {
+  PENDENTE
   ENVIADA
-  FALHA
 }
 
 abstract class Usuario {
@@ -105,7 +106,6 @@ class Notificacao {
   - status: StatusNotificacao
   - codigoReferencia: string
   - criadaEm: datetime
-  + marcarFalha(): void
 }
 
 class TokenRecuperacao {
@@ -125,6 +125,12 @@ class LinhaExtrato <<record>> {
   - descricao: string
   - valor: int
   - referencia: string
+}
+
+' Value-object produzido pelos templates de e-mail (assunto + corpo)
+class MensagemEmail <<record>> {
+  - assunto: string
+  - corpo: string
 }
 
 ' === Herança ===
@@ -150,7 +156,7 @@ Resgate "*" --> "1" Aluno    : por
 Resgate "*" --> "1" Vantagem : de
 
 ' Eventos que disparam notificação
-TransferenciaMoeda ..> Notificacao : "dispara (1)"
+TransferenciaMoeda ..> Notificacao : "dispara (2: aluno + professor)"
 Resgate            ..> Notificacao : "dispara (2: aluno + empresa)"
 TokenRecuperacao   ..> Notificacao : "dispara (link reset)"
 
@@ -186,6 +192,14 @@ note right of Notificacao
   persistida; a UI mostra a caixa
   em /notificacoes e
   /admin/notificacoes.
+end note
+
+note right of MensagemEmail
+  Produzida por TemplatesEmailMoeda:
+  um template para o aluno (recebimento)
+  e um para o professor (confirmação de
+  envio) — Lab04S01. Vira o assunto/corpo
+  de uma Notificacao.
 end note
 
 note right of TokenRecuperacao

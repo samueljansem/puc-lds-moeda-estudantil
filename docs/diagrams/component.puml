@@ -129,7 +129,7 @@ TrocaSenhaController       )-- ISvcCad
 RecuperacaoSenhaController )-- ISvcRec
 
 ' Serviços → Serviço de notificação (outbox)
-ServicoMoeda             )-- ISvcNot : "notifica aluno"
+ServicoMoeda             )-- ISvcNot : "notifica aluno + professor"
 ServicoResgate           )-- ISvcNot : "cupom + confirmação"
 ServicoRecuperacaoSenha  )-- ISvcNot : "link reset"
 

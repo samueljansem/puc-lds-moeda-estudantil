@@ -80,9 +80,10 @@ através de uma moeda virtual.
 - 🧑‍🏫 **Cadastro do Professor** via seed Flyway (FR-003 — instituição envia
   o roster, professor não se auto-cadastra). Login `demo.professor`.
 - 💰 **Transferência de moedas** Professor → Aluno com motivo obrigatório
-  (US1 / FR-005, FR-006). Operação atômica: saldo do professor cai, saldo
-  do aluno sobe, transação é gravada e notificação para o aluno é
-  enviada — tudo numa transação JPA.
+  (US1 / FR-005, FR-006), restrita a alunos ativos da mesma instituição.
+  Operação atômica: saldo do professor cai, saldo do aluno sobe, transação
+  é gravada e duas notificações são enviadas (recebimento para o aluno +
+  confirmação para o professor) — tudo numa transação JPA.
 - 🎟️ **Catálogo de Vantagens** com cards (foto via BLOB), filtros por
   custo máximo e empresa (US9). Empresa parceira cadastra/edita/desativa
   vantagens (US4 + US8) — vantagens desativadas saem do catálogo público

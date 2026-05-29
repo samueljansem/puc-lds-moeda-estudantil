@@ -6,14 +6,13 @@ import br.puc.moedaestudantil.model.Professor;
 import br.puc.moedaestudantil.model.TipoAtor;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MicronautTest(transactional = false)
+@MicronautTest
 class ProfessorDAOTest {
 
     @Inject ProfessorDAO professorDAO;
@@ -21,7 +20,6 @@ class ProfessorDAOTest {
     @Inject InstituicaoDAO instituicaoDAO;
 
     @Test
-    @Transactional
     void demoProfessorTemSaldoInicialDeMil() {
         Professor demo = professorDAO.findByCredencialLogin("demo.professor").orElseThrow();
         assertEquals(1000, demo.getSaldo());
@@ -30,7 +28,6 @@ class ProfessorDAOTest {
     }
 
     @Test
-    @Transactional
     void existsByCpf_falseWhenAbsent_trueWhenPresent() {
         Instituicao inst = instituicaoDAO.findAll().iterator().next();
         Credencial c = credencialDAO.save(new Credencial("prof.cpftest", "hash", TipoAtor.PROFESSOR));

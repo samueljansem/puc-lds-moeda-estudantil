@@ -15,7 +15,6 @@ import br.puc.moedaestudantil.model.TipoAtor;
 import br.puc.moedaestudantil.model.TransferenciaMoeda;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -24,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MicronautTest(transactional = false)
+@MicronautTest
 class ServicoMoedaTest {
 
     @Inject ServicoMoeda servicoMoeda;
@@ -36,7 +35,6 @@ class ServicoMoedaTest {
     @Inject NotificacaoDAO notificacaoDAO;
 
     @Test
-    @Transactional
     void transferenciaSubtraiSaldoProfessorEAdicionaAoAlunoEGeraNotificacao() {
         Professor professor = criarProfessor("transf.prof1", "11144477733", 500, "PUC Minas");
         Aluno aluno = criarAluno("transf.aluno1", "44455566677", "transf.aluno1@a.com", professor.getInstituicao());
@@ -55,7 +53,49 @@ class ServicoMoedaTest {
     }
 
     @Test
-    @Transactional
+    void transferenciaGeraNotificacaoDeConfirmacaoParaProfessor() {
+        Professor professor = criarProfessor("transf.prof5", "90000000015", 500, "PUC Minas");
+        Aluno aluno = criarAluno("transf.aluno5", "90000000025", "transf.aluno5@a.com", professor.getInstituicao());
+
+        servicoMoeda.transferir(professor.getId(), aluno.getId(), 100, "Bom trabalho");
+
+        var notifsProf = notificacaoDAO.findByDestinatarioOrderByCriadaEmDesc(professor.getEmail());
+        assertEquals(1, notifsProf.size());
+        assertTrue(notifsProf.get(0).getCorpo().contains("Bom trabalho"));
+        assertTrue(notifsProf.get(0).getCorpo().contains(aluno.getNome()));
+        assertTrue(notifsProf.get(0).getCorpo().contains("400"), "deve informar o saldo restante do professor");
+    }
+
+    @Test
+    void transferenciaRejeitadaParaAlunoDeOutraInstituicao() {
+        Professor professor = criarProfessor("transf.prof6", "90000000035", 500, "PUC Minas");
+        Instituicao outra = instituicaoDAO.findAll().stream()
+                .filter(i -> i.getNome().equals("UFMG")).findFirst().orElseThrow();
+        Aluno aluno = criarAluno("transf.aluno6", "90000000045", "transf.aluno6@a.com", outra);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> servicoMoeda.transferir(professor.getId(), aluno.getId(), 100, "motivo"));
+
+        assertEquals(500, professorDAO.findById(professor.getId()).orElseThrow().getSaldo());
+        assertEquals(0, alunoDAO.findById(aluno.getId()).orElseThrow().getSaldo());
+        assertTrue(transferenciaDAO.findByAlunoIdOrderByRealizadaEmDesc(aluno.getId()).isEmpty());
+    }
+
+    @Test
+    void transferenciaRejeitadaParaAlunoInativo() {
+        Professor professor = criarProfessor("transf.prof7", "90000000055", 500, "UFOP");
+        Aluno aluno = criarAluno("transf.aluno7", "90000000065", "transf.aluno7@a.com", professor.getInstituicao());
+        aluno.setAtivo(false);
+        alunoDAO.update(aluno);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> servicoMoeda.transferir(professor.getId(), aluno.getId(), 100, "motivo"));
+
+        assertEquals(500, professorDAO.findById(professor.getId()).orElseThrow().getSaldo());
+        assertEquals(0, alunoDAO.findById(aluno.getId()).orElseThrow().getSaldo());
+    }
+
+    @Test
     void transferenciaRejeitadaComSaldoInsuficiente() {
         Professor professor = criarProfessor("transf.prof2", "22255588844", 50, "UFMG");
         Aluno aluno = criarAluno("transf.aluno2", "55566677788", "transf.aluno2@a.com", professor.getInstituicao());
@@ -69,7 +109,6 @@ class ServicoMoedaTest {
     }
 
     @Test
-    @Transactional
     void transferenciaRejeitadaComMotivoVazio() {
         Professor professor = criarProfessor("transf.prof3", "33366699955", 500, "CEFET-MG");
         Aluno aluno = criarAluno("transf.aluno3", "66677788899", "transf.aluno3@a.com", professor.getInstituicao());
@@ -81,7 +120,6 @@ class ServicoMoedaTest {
     }
 
     @Test
-    @Transactional
     void extratoAlunoMostraTransferenciasRecebidas() {
         Professor professor = criarProfessor("transf.prof4", "44477700066", 300, "UFOP");
         Aluno aluno = criarAluno("transf.aluno4", "77788899900", "transf.aluno4@a.com", professor.getInstituicao());

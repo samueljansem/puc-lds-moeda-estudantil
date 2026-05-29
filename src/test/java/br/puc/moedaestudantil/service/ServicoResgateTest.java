@@ -18,7 +18,6 @@ import br.puc.moedaestudantil.model.TipoAtor;
 import br.puc.moedaestudantil.model.Vantagem;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -27,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@MicronautTest(transactional = false)
+@MicronautTest
 class ServicoResgateTest {
 
     @Inject ServicoResgate servicoResgate;
@@ -41,7 +40,6 @@ class ServicoResgateTest {
     @Inject NotificacaoDAO notificacaoDAO;
 
     @Test
-    @Transactional
     void resgatePadraoDebitaSaldoEEmitiCodigoUnicoEDuasNotificacoes() {
         Aluno aluno = criarAluno("resg.aluno1", "12312312300", "resg.aluno1@a.com", 200);
         EmpresaParceira empresa = criarEmpresa("resg.empresa1", "11000000000001", "resg.empresa1@a.com");
@@ -62,7 +60,6 @@ class ServicoResgateTest {
     }
 
     @Test
-    @Transactional
     void resgateRejeitadoComSaldoInsuficiente() {
         Aluno aluno = criarAluno("resg.aluno2", "23423423400", "resg.aluno2@a.com", 50);
         EmpresaParceira empresa = criarEmpresa("resg.empresa2", "22000000000001", "resg.empresa2@a.com");
@@ -76,7 +73,6 @@ class ServicoResgateTest {
     }
 
     @Test
-    @Transactional
     void resgateRejeitadoSeVantagemEstaDesativada() {
         Aluno aluno = criarAluno("resg.aluno3", "34534534500", "resg.aluno3@a.com", 500);
         EmpresaParceira empresa = criarEmpresa("resg.empresa3", "33000000000001", "resg.empresa3@a.com");
@@ -90,7 +86,6 @@ class ServicoResgateTest {
     }
 
     @Test
-    @Transactional
     void doisResgatesGeramCodigosDistintos() {
         Aluno aluno = criarAluno("resg.aluno4", "45645645600", "resg.aluno4@a.com", 1000);
         EmpresaParceira empresa = criarEmpresa("resg.empresa4", "44000000000001", "resg.empresa4@a.com");
@@ -107,7 +102,6 @@ class ServicoResgateTest {
     }
 
     @Test
-    @Transactional
     void catalogoFiltradoPorCustoMaximoExcluiVantagensMaisCaras() {
         EmpresaParceira empresa = criarEmpresa("resg.empresa5", "55000000000001", "resg.empresa5@a.com");
         servicoVantagem.cadastrar(empresa, "Barata", 50, null, null);
