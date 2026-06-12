@@ -1,0 +1,44 @@
+@startuml seq-cadastro-aluno
+' Diagrama de Sequência — Cadastrar-se no sistema (C01)
+' Lab04S02. Fiel à implementação: AlunoController.cadastrar →
+' ServicoCadastro.cadastrarAluno (unicidade de CPF/e-mail/login,
+' credencial com BCrypt, vínculo com instituição).
+
+skinparam shadowing false
+title Sequência — Cadastro de Aluno
+
+actor "Visitante" as visitante
+participant "AlunoController" as ctrl
+participant "ServicoCadastro" as servico
+participant "AlunoDAO" as alunoDAO
+participant "CredencialDAO" as credDAO
+participant "InstituicaoDAO" as instDAO
+database "BD (H2)" as bd
+
+visitante -> ctrl : GET /alunos/cadastro
+ctrl -> instDAO : findAll()
+instDAO -> bd : SELECT instituicao
+ctrl --> visitante : formulário (aluno-cadastro)
+
+visitante -> ctrl : POST /alunos/cadastro\n(nome, email, cpf, rg, endereço,\ncurso, instituição, login, senha)
+ctrl -> servico : cadastrarAluno(form)
+
+group Transação atômica [@Transactional]
+  servico -> alunoDAO : existsByCpf / existsByEmail
+  servico -> credDAO : existsByLogin
+  alt dado duplicado
+    servico --> ctrl : CadastroDuplicadoException(campo)
+    ctrl --> visitante : reexibe formulário\nindicando o campo duplicado
+  else dados únicos
+    servico -> instDAO : findById(instituicaoId)
+    servico -> servico : hash BCrypt da senha (cost 12)
+    servico -> credDAO : save(Credencial ALUNO)
+    credDAO -> bd : INSERT credencial
+    servico -> alunoDAO : save(Aluno saldo=0, ativo=true)
+    alunoDAO -> bd : INSERT usuario + aluno
+    servico --> ctrl : Aluno
+    ctrl --> visitante : 303 → /login?cadastrado=1
+  end
+end
+
+@enduml

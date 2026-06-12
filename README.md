@@ -169,6 +169,25 @@ cuja PK é também FK para `usuario.id`.
 | **Componentes** | **Modelo ER** |
 | ![Componentes](docs/diagrams/component.png) | ![ER](docs/diagrams/er.png) |
 
+#### Diagramas de Sequência (Lab04S02/S03)
+
+Um diagrama por caso de uso central; os casos de notificação (C05, C08, C11)
+estão incorporados ao diagrama do caso de uso que os dispara. O fluxo
+assíncrono de e-mail (outbox → RabbitMQ → listener) está detalhado em
+`seq-envio-moedas` e referenciado (`ref`) nos demais.
+
+| Caso de uso | Diagrama |
+| --- | --- |
+| C01 — Cadastro de aluno | [seq-cadastro-aluno](docs/diagrams/seq-cadastro-aluno.png) |
+| C06 — Cadastro de empresa parceira | [seq-cadastro-empresa](docs/diagrams/seq-cadastro-empresa.png) |
+| C02 — Autenticação (login/senha) | [seq-autenticacao](docs/diagrams/seq-autenticacao.png) |
+| C04 + C05 — Envio de moedas (com e-mails) | [seq-envio-moedas](docs/diagrams/seq-envio-moedas.png) |
+| C03 — Extrato (professor e aluno) | [seq-extrato](docs/diagrams/seq-extrato.png) |
+| C07 — Cadastro de vantagem | [seq-cadastro-vantagem](docs/diagrams/seq-cadastro-vantagem.png) |
+| C09 + C16 — Catálogo de vantagens (com filtros) | [seq-catalogo](docs/diagrams/seq-catalogo.png) |
+| C10 + C08 + C11 — Resgate de vantagem (cupom + e-mails) | [seq-resgate](docs/diagrams/seq-resgate.png) |
+| **Diagrama de Sequência Geral** — ciclo completo da moeda | [seq-geral](docs/diagrams/seq-geral.png) |
+
 > Fontes em PlantUML: `docs/diagrams/*.puml`. Para regenerar PNGs:
 > `plantuml docs/diagrams/*.puml`.
 

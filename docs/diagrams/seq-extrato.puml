@@ -1,0 +1,39 @@
+@startuml seq-extrato
+' Diagrama de Sequência — Consultar extrato e saldo (C03)
+' Lab04S02. Um único caso de uso com dois fluxos (alt): professor vê os
+' envios; aluno vê recebimentos + resgates mesclados em ordem cronológica.
+
+skinparam shadowing false
+title Sequência — Consultar Extrato e Saldo
+
+actor "Usuário\n(Professor ou Aluno)" as user
+participant "ProfessorController /\nAlunoController" as ctrl
+participant "ServicoMoeda" as moeda
+participant "ServicoResgate" as resgate
+participant "TransferenciaMoedaDAO" as transfDAO
+participant "ResgateDAO" as resgateDAO
+database "BD (H2)" as bd
+
+alt Professor
+  user -> ctrl : GET /professores/extrato
+  ctrl -> moeda : extratoProfessor(professorId)
+  moeda -> transfDAO : findByProfessorId\nOrderByRealizadaEmDesc
+  transfDAO -> bd : SELECT transferencia_moeda
+  bd --> transfDAO
+  moeda --> ctrl : List<LinhaExtrato>\n("Envio", valores negativos)
+  ctrl --> user : professor-extrato.html\n(saldo atual + linhas)
+else Aluno
+  user -> ctrl : GET /alunos/extrato
+  ctrl -> moeda : extratoAluno(alunoId)
+  moeda -> transfDAO : findByAlunoId\nOrderByRealizadaEmDesc
+  transfDAO -> bd : SELECT transferencia_moeda
+  moeda --> ctrl : linhas "Recebido" (valores positivos)
+  ctrl -> resgate : linhasExtratoAluno(alunoId)
+  resgate -> resgateDAO : findByAlunoId\nOrderByRealizadoEmDesc
+  resgateDAO -> bd : SELECT resgate
+  resgate --> ctrl : linhas "Resgate"\n(valores negativos, código do cupom)
+  ctrl -> ctrl : mescla e ordena por data desc
+  ctrl --> user : aluno-extrato.html\n(saldo atual + linhas unificadas)
+end
+
+@enduml

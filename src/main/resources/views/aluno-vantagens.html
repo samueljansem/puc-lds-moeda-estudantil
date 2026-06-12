@@ -49,7 +49,7 @@
     <div class="galeria-vantagens" th:if="${!vantagens.isEmpty()}">
         <div class="card-vantagem" th:each="v : ${vantagens}">
             <img th:if="${v.temFoto()}" th:src="@{|/vantagens/${v.id}/foto|}" alt="Foto da vantagem">
-            <img th:unless="${v.temFoto()}" src="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 140'&gt;&lt;rect fill='%23f1ebe3' width='220' height='140'/&gt;&lt;text x='110' y='75' font-family='Georgia,serif' font-size='13' fill='%23a89a88' text-anchor='middle'&gt;sem foto&lt;/text&gt;&lt;/svg&gt;" alt="Sem foto">
+            <img th:unless="${v.temFoto()}" src="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 140'&gt;&lt;rect fill='%23eaf0ea' width='220' height='140'/&gt;&lt;text x='110' y='75' font-family='Archivo,Arial,sans-serif' font-size='13' fill='%23879487' text-anchor='middle'&gt;sem foto&lt;/text&gt;&lt;/svg&gt;" alt="Sem foto">
             <div class="corpo">
                 <h3 th:text="${v.descricao}">Descrição</h3>
                 <p class="custo" th:text="${v.custo + ' moedas'}">0 moedas</p>

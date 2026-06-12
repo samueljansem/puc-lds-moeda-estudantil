@@ -1,0 +1,65 @@
+@startuml seq-resgate
+' Diagrama de Sequência — Resgatar vantagem (C10 + C08 + C11)
+' Lab04S03 (troca de vantagens). Fiel à implementação:
+' CatalogoController.resgatar → ServicoResgate.resgatar (débito atômico,
+' cupom UUID, e-mail ao aluno e confirmação à empresa). O fluxo assíncrono
+' de entrega está detalhado em seq-envio-moedas.puml (ref).
+
+skinparam shadowing false
+title Sequência — Resgate de Vantagem (Aluno)
+
+actor "Aluno" as aluno
+participant "CatalogoController" as ctrl
+participant "ServicoResgate" as servico
+participant "AlunoDAO" as alunoDAO
+participant "VantagemDAO" as vantagemDAO
+participant "ResgateDAO" as resgateDAO
+participant "ServicoNotificacao" as notif
+database "BD (H2)" as bd
+
+aluno -> ctrl : POST /alunos/vantagens/{id}/resgatar
+ctrl -> servico : resgatar(alunoId, vantagemId)
+
+group Transação atômica [@Transactional]
+  servico -> alunoDAO : findById(alunoId)
+  servico -> vantagemDAO : findById(vantagemId)
+  vantagemDAO -> bd : SELECT
+  servico -> servico : valida vantagem ativa\ne saldo ≥ custo
+
+  alt vantagem inativa/inexistente
+    servico --> ctrl : VantagemIndisponivelException
+    ctrl --> aluno : 303 → /alunos/vantagens?erro=indisponivel
+  else saldo insuficiente
+    servico --> ctrl : SaldoInsuficienteException
+    ctrl --> aluno : 303 → /alunos/vantagens?erro=saldoInsuficiente
+  else resgate válido
+    servico -> alunoDAO : update(aluno saldo − custo)
+    alunoDAO -> bd : UPDATE saldo
+    servico -> servico : gera código UUID do cupom
+    servico -> resgateDAO : save(Resgate código único)
+    resgateDAO -> bd : INSERT resgate
+
+    servico -> notif : enviar(e-mail do aluno,\n"Cupom de resgate", corpo com código)
+    notif -> bd : INSERT notificacao (PENDENTE)
+    servico -> notif : enviar(e-mail da empresa,\n"Resgate confirmado", corpo com código\ne dados do aluno)
+    notif -> bd : INSERT notificacao (PENDENTE)
+
+    servico --> ctrl : Resgate
+    ctrl --> aluno : 303 → /alunos/cupons?novo={codigo}
+  end
+end
+
+ref over notif, bd
+  Entrega assíncrona via Transactional Outbox:
+  DrainadorNotificacoes → RabbitMQ → ListenerEmail
+  (ver seq-envio-moedas.puml)
+end ref
+
+note right of notif
+  Mesmo código de verificação nos
+  dois e-mails: o aluno apresenta o
+  cupom e a empresa confere
+  presencialmente (C08 + C11).
+end note
+
+@enduml

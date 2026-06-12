@@ -1,0 +1,64 @@
+@startuml seq-geral
+' Diagrama de Sequência Geral — ciclo de vida completo da moeda (Lab04S03)
+' Visão fim a fim que conecta os casos de uso: concessão semestral (C20),
+' envio de moedas (C04/C05), extrato (C03), catálogo (C09) e resgate
+' (C10/C08/C11), com a entrega assíncrona de e-mails (outbox + RabbitMQ).
+' Os detalhes internos de cada passo estão nos diagramas seq-*.puml.
+
+skinparam shadowing false
+title Sequência Geral — Da Concessão Semestral ao Resgate da Vantagem
+
+actor "Admin" as admin
+actor "Professor" as prof
+actor "Aluno" as aluno
+actor "Empresa Parceira" as empresa
+participant "Sistema\n(Controllers + Serviços)" as sistema
+database "BD (H2)" as bd
+participant "Outbox →\nDrainadorNotificacoes" as outbox
+queue "RabbitMQ" as rabbit
+participant "ListenerEmail" as listener
+
+== 1. Concessão semestral (C20) ==
+admin -> sistema : conceder semestre
+sistema -> bd : +1.000 moedas a cada professor\n(acumula sobre o saldo atual)
+
+== 2. Cadastro de vantagem (C07) ==
+empresa -> sistema : cadastra vantagem\n(descrição, foto, custo)
+sistema -> bd : INSERT vantagem (ativa)
+
+== 3. Envio de moedas (C04 + C05) ==
+prof -> sistema : transfere moedas ao aluno\n(com motivo obrigatório)
+sistema -> bd : debita professor, credita aluno,\nINSERT transferencia_moeda
+sistema -> bd : INSERT 2 notificações PENDENTE\n(recebimento ao aluno +\nconfirmação ao professor)
+
+== 4. Entrega assíncrona dos e-mails ==
+loop a cada 2s
+  outbox -> bd : lê notificações PENDENTE
+  outbox -> rabbit : publica NotificacaoPublicada(id)
+end
+rabbit -> listener : consome (fila notificacoes.email)
+listener -> bd : marca ENVIADA
+listener --> aluno : e-mail "Você recebeu X moedas"
+listener --> prof : e-mail "Confirmação: você enviou X moedas"
+
+== 5. Consulta de extrato (C03) ==
+aluno -> sistema : consulta extrato e saldo
+sistema -> bd : transferências recebidas + resgates
+sistema --> aluno : extrato unificado em ordem cronológica
+
+== 6. Catálogo e resgate (C09 + C10) ==
+aluno -> sistema : consulta catálogo\n(filtros por custo/empresa)
+sistema --> aluno : vantagens ativas
+aluno -> sistema : resgata vantagem
+sistema -> bd : debita saldo, INSERT resgate\ncom código UUID único
+sistema -> bd : INSERT 2 notificações PENDENTE\n(cupom ao aluno + confirmação à empresa)
+
+== 7. Cupom e conferência (C08 + C11) ==
+rabbit -> listener : consome notificações do resgate
+listener --> aluno : e-mail com cupom\n(código de verificação)
+listener --> empresa : e-mail de confirmação\n(mesmo código + dados do aluno)
+
+aluno -> empresa : apresenta o código presencialmente
+empresa -> empresa : confere o código\ne entrega o benefício
+
+@enduml

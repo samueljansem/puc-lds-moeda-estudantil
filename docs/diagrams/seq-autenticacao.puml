@@ -1,0 +1,43 @@
+@startuml seq-autenticacao
+' Diagrama de Sequência — Autenticar-se (C02)
+' Lab04S02. Fiel à implementação: login por sessão (Micronaut Security) com
+' ServicoAutenticacao (HttpRequestAuthenticationProvider), verificação BCrypt,
+' bloqueio de conta desativada e redirecionamento por papel (HomeController).
+
+skinparam shadowing false
+title Sequência — Autenticação (login/senha)
+
+actor "Usuário" as user
+participant "Micronaut Security\n(POST /login)" as security
+participant "ServicoAutenticacao" as servico
+participant "CredencialDAO" as credDAO
+participant "UsuarioDAO" as usuarioDAO
+participant "HomeController" as home
+database "BD (H2)" as bd
+
+user -> security : POST /login (login, senha)
+security -> servico : authenticate(authRequest)
+servico -> credDAO : findByLogin(login)
+credDAO -> bd : SELECT credencial
+bd --> credDAO
+
+alt credencial inexistente ou senha não confere (BCrypt)
+  servico --> security : failure(CREDENTIALS_DO_NOT_MATCH)
+  security --> user : 303 → /login?erro=1
+else credencial válida
+  opt papel ≠ ADMIN
+    servico -> usuarioDAO : findByCredencialId(id)
+    usuarioDAO -> bd : SELECT usuario
+    alt conta desativada
+      servico --> security : failure(USER_DISABLED)
+      security --> user : 303 → /login?erro=1
+    end
+  end
+  servico --> security : success(login, [papel])
+  security -> security : cria sessão (cookie)
+  security --> user : 303 → /
+  user -> home : GET /
+  home --> user : redireciona por papel:\nALUNO/PROFESSOR/ADMIN → /alunos/vantagens\nEMPRESA_PARCEIRA → /empresas/vantagens
+end
+
+@enduml

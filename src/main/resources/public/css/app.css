@@ -1,45 +1,56 @@
-/* === Sistema de Moeda Estudantil — design system "Mérito" ===
- * Um livro-razão de reconhecimento: papel quente, tinta café e um selo
- * vermelhão cunhado. Cores em OKLCH; neutros levemente quentes.
- * Fraunces (serifa de exibição) só para títulos, marca e o saldo grande.
- * Hanken Grotesk para toda a interface. Mono do sistema para códigos.
+/* === Sistema de Moeda Estudantil — design system "Caderneta" ===
+ * Uma caderneta de mérito: capa em verde-louro profundo, páginas de papel
+ * frio pautado, tinta verde-escura e uma única moeda de ouro reservada à
+ * própria moeda. Cores em OKLCH; neutros levemente esverdeados.
+ * Archivo (variável, eixo de largura) para tudo: largura normal na
+ * interface, expandida nos momentos de exibição. Mono do sistema p/ códigos.
  * Sem framework, sem JS — apenas CSS + HTML.
  * Os nomes de classe são contrato com as views Thymeleaf; não renomear.
  */
 
 :root {
-    /* Neutros — papel & tinta (quentes) */
-    --paper:          oklch(0.985 0.008 80);
-    --surface:        oklch(0.997 0.004 80);
-    --surface-sunken: oklch(0.965 0.010 78);
-    --ink:            oklch(0.255 0.018 55);
-    --ink-2:          oklch(0.44 0.016 58);
-    --ink-3:          oklch(0.56 0.014 60);
-    --line:           oklch(0.905 0.012 78);
-    --line-strong:    oklch(0.845 0.014 75);
+    /* Neutros — papel pautado & tinta (frios, tingidos de verde) */
+    --paper:          oklch(0.975 0.006 145);
+    --surface:        oklch(0.995 0.003 145);
+    --surface-sunken: oklch(0.955 0.008 148);
+    --ink:            oklch(0.24 0.02 160);
+    --ink-2:          oklch(0.42 0.018 158);
+    --ink-3:          oklch(0.54 0.016 156);
+    --line:           oklch(0.90 0.012 150);
+    --line-strong:    oklch(0.83 0.016 150);
 
-    /* Selo — vermelhão / cinábrio (assinatura da marca) */
-    --seal:           oklch(0.585 0.175 38);
-    --seal-strong:    oklch(0.515 0.17 36);
-    --seal-ink:       oklch(0.46 0.15 37);
-    --seal-tint:      oklch(0.955 0.03 50);
-    --seal-tint-line: oklch(0.89 0.055 48);
+    /* Louro — o verde da marca (mérito, registro, caderneta) */
+    --laurel:           oklch(0.46 0.09 155);
+    --laurel-strong:    oklch(0.40 0.085 155);
+    --laurel-ink:       oklch(0.39 0.08 155);
+    --laurel-tint:      oklch(0.955 0.025 152);
+    --laurel-tint-line: oklch(0.885 0.04 152);
 
-    /* Feedback — quentes, distintos do selo */
-    --ok:        oklch(0.56 0.115 150);
-    --ok-ink:    oklch(0.43 0.10 150);
-    --ok-tint:   oklch(0.955 0.035 150);
-    --ok-line:   oklch(0.88 0.05 150);
+    /* Capa — o verde profundo do tecido do livro, e o creme sobre ele */
+    --cover:        oklch(0.33 0.06 158);
+    --cover-ink:    oklch(0.965 0.012 120);
+    --cover-ink-2:  oklch(0.85 0.03 140);
+    --cover-line:   oklch(0.965 0.012 120 / 0.22);
 
-    --warn:      oklch(0.70 0.12 72);
-    --warn-ink:  oklch(0.50 0.10 66);
-    --warn-tint: oklch(0.955 0.05 80);
-    --warn-line: oklch(0.87 0.06 78);
+    /* Ouro — exclusivo da moeda: glifo e detalhes cunhados, nunca texto */
+    --gold:      oklch(0.78 0.125 88);
+    --gold-deep: oklch(0.62 0.115 80);
 
-    --erro:      oklch(0.545 0.18 25);
-    --erro-ink:  oklch(0.47 0.16 25);
-    --erro-tint: oklch(0.955 0.035 25);
-    --erro-line: oklch(0.87 0.06 28);
+    /* Feedback — verde-sucesso é parente do louro; receber é o ato da marca */
+    --ok:        oklch(0.53 0.11 152);
+    --ok-ink:    oklch(0.41 0.095 152);
+    --ok-tint:   oklch(0.955 0.03 152);
+    --ok-line:   oklch(0.88 0.045 152);
+
+    --warn:      oklch(0.68 0.115 75);
+    --warn-ink:  oklch(0.48 0.095 70);
+    --warn-tint: oklch(0.955 0.045 85);
+    --warn-line: oklch(0.87 0.055 80);
+
+    --erro:      oklch(0.54 0.17 22);
+    --erro-ink:  oklch(0.46 0.15 24);
+    --erro-tint: oklch(0.955 0.03 20);
+    --erro-line: oklch(0.87 0.055 24);
 
     /* Espaçamento (base 4px) */
     --space-1:  0.25rem;
@@ -63,30 +74,31 @@
     --t-2xl:  2rem;
     --t-3xl:  2.75rem;
 
-    --fonte-display: "Fraunces", Georgia, "Times New Roman", serif;
-    --fonte-ui: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --fonte-ui: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --fonte-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+    /* Exibição = mesma família, expandida (eixo wdth da variável) */
+    --largura-display: 118%;
 
-    /* Geometria */
-    --r-sm: 5px;
-    --r-md: 9px;
-    --r-lg: 14px;
+    /* Geometria — retilínea, de registro */
+    --r-sm: 3px;
+    --r-md: 6px;
+    --r-lg: 10px;
     --r-pill: 999px;
 
-    /* Sombras — quentes e discretas */
-    --shadow-sm: 0 1px 2px oklch(0.4 0.03 55 / 0.06);
-    --shadow-md: 0 2px 6px oklch(0.4 0.03 55 / 0.07), 0 1px 2px oklch(0.4 0.03 55 / 0.05);
-    --shadow-lg: 0 12px 28px -10px oklch(0.4 0.03 55 / 0.16), 0 4px 10px -6px oklch(0.4 0.03 55 / 0.10);
+    /* Sombras — frias e discretas; as bordas fazem o trabalho estrutural */
+    --shadow-sm: 0 1px 2px oklch(0.35 0.03 158 / 0.06);
+    --shadow-md: 0 2px 6px oklch(0.35 0.03 158 / 0.07), 0 1px 2px oklch(0.35 0.03 158 / 0.05);
+    --shadow-lg: 0 12px 28px -10px oklch(0.35 0.03 158 / 0.16), 0 4px 10px -6px oklch(0.35 0.03 158 / 0.10);
 
-    /* Foco — anel vermelhão translúcido em todos os interativos */
-    --ring: 0 0 0 3px oklch(0.585 0.175 38 / 0.30);
+    /* Foco — anel louro translúcido em todos os interativos */
+    --ring: 0 0 0 3px oklch(0.46 0.09 155 / 0.32);
 
     /* Movimento — saída exponencial */
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
     --t: 170ms var(--ease);
 
-    /* Glifo de moeda (selo achatado) — reaproveitado em saldo e custo */
-    --moeda: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18.5' fill='%23cf4f2c'/%3E%3Ccircle cx='20' cy='20' r='15' fill='none' stroke='%23fff' stroke-opacity='0.5' stroke-width='1'/%3E%3Ctext x='20' y='27.6' text-anchor='middle' font-family='Georgia,serif' font-size='21' font-weight='700' fill='%23fff'%3EM%3C/text%3E%3C/svg%3E");
+    /* Glifo de moeda (ouro cunhado, M verde) — reaproveitado em saldo e custo */
+    --moeda: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18.5' fill='%23d2a53c'/%3E%3Ccircle cx='20' cy='20' r='15' fill='none' stroke='%231e4a39' stroke-opacity='0.45' stroke-width='1.2'/%3E%3Ctext x='20' y='26.8' text-anchor='middle' font-family='Archivo,Arial,sans-serif' font-size='17' font-weight='700' fill='%231e4a39'%3EM%3C/text%3E%3C/svg%3E");
 }
 
 * { box-sizing: border-box; }
@@ -109,7 +121,7 @@ body {
 
 main { flex: 1; }
 
-::selection { background: var(--seal-tint); color: var(--seal-ink); }
+::selection { background: var(--laurel-tint); color: var(--laurel-ink); }
 
 /* Foco visível consistente */
 :where(a, button, [role="button"], input, select, textarea):focus-visible {
@@ -118,34 +130,33 @@ main { flex: 1; }
     border-radius: var(--r-sm);
 }
 
-/* === Header — barra de papel quente, marca em selo === */
+/* === Header — a lombada do livro: verde profundo, marca em creme === */
 
 .topo {
-    background: var(--surface);
-    color: var(--ink);
+    background: var(--cover);
+    color: var(--cover-ink);
     padding: var(--space-4) var(--space-8);
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: var(--space-4);
-    border-bottom: 1px solid var(--line);
+    border-bottom: 3px solid var(--gold-deep);
 }
 
 .topo .marca {
-    color: var(--ink);
+    color: var(--cover-ink);
     text-decoration: none;
-    font-family: var(--fonte-display);
-    font-optical-sizing: auto;
+    font-stretch: var(--largura-display);
     font-weight: 600;
     font-size: var(--t-lg);
-    letter-spacing: -0.01em;
+    letter-spacing: 0.01em;
     display: inline-flex;
     align-items: center;
     gap: var(--space-3);
 }
 
-.topo .marca:hover { text-decoration: none; color: var(--ink); }
+.topo .marca:hover { text-decoration: none; color: var(--cover-ink); }
 
 .topo .marca svg {
     width: 30px;
@@ -160,30 +171,35 @@ main { flex: 1; }
 }
 
 .topo nav a {
-    color: var(--ink-2);
+    color: var(--cover-ink-2);
     text-decoration: none;
     font-size: var(--t-sm);
     font-weight: 500;
     transition: color var(--t);
 }
 
-.topo nav a:hover { color: var(--seal); text-decoration: none; }
+.topo nav a:hover { color: var(--cover-ink); text-decoration: none; }
+
+/* Sobre a capa escura, o anel de foco é creme */
+.topo :where(a, button):focus-visible {
+    box-shadow: 0 0 0 3px oklch(0.965 0.012 120 / 0.45);
+}
 
 .topo .usuario {
-    color: var(--ink-2);
+    color: var(--cover-ink);
     font-size: var(--t-xs);
     font-weight: 600;
     padding: var(--space-1) var(--space-3);
-    border: 1px solid var(--line-strong);
+    border: 1px solid var(--cover-line);
     border-radius: var(--r-pill);
-    background: var(--surface-sunken);
+    background: oklch(0.965 0.012 120 / 0.08);
 }
 
 .form-logout { display: inline; margin: 0; }
 .form-logout button {
     background: transparent;
-    border: 1px solid var(--line-strong);
-    color: var(--ink-2);
+    border: 1px solid var(--cover-line);
+    color: var(--cover-ink-2);
     padding: var(--space-1) var(--space-3);
     border-radius: var(--r-sm);
     cursor: pointer;
@@ -193,9 +209,9 @@ main { flex: 1; }
     transition: background var(--t), border-color var(--t), color var(--t);
 }
 .form-logout button:hover {
-    background: var(--surface-sunken);
-    border-color: var(--ink-3);
-    color: var(--ink);
+    background: oklch(0.965 0.012 120 / 0.10);
+    border-color: var(--cover-ink-2);
+    color: var(--cover-ink);
 }
 
 /* === Container === */
@@ -206,14 +222,14 @@ main { flex: 1; }
     width: 100%;
 }
 
-/* === Card / folha — contêiner principal de conteúdo === */
+/* === Card / página da caderneta — contêiner principal de conteúdo === */
 
 .card {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--r-lg);
     padding: var(--space-10) var(--space-8);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-sm);
     max-width: 760px;
     margin: 0 auto;
 }
@@ -236,17 +252,16 @@ h1, h2, h3 {
 
 h1 {
     margin: 0 0 var(--space-3);
-    font-family: var(--fonte-display);
-    font-optical-sizing: auto;
+    font-stretch: var(--largura-display);
     font-size: var(--t-xl);
     font-weight: 600;
-    letter-spacing: -0.015em;
+    letter-spacing: 0;
 }
 
 h1.titulo-display {
     font-size: var(--t-2xl);
     font-weight: 600;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.005em;
     margin-bottom: var(--space-4);
 }
 
@@ -268,12 +283,12 @@ h3 {
 p { margin: 0 0 var(--space-4); color: var(--ink-2); }
 
 a {
-    color: var(--seal);
+    color: var(--laurel);
     text-decoration: none;
     font-weight: 500;
     transition: color var(--t);
 }
-a:hover { color: var(--seal-strong); text-decoration: underline; text-underline-offset: 3px; }
+a:hover { color: var(--laurel-strong); text-decoration: underline; text-underline-offset: 3px; }
 
 strong { font-weight: 600; color: var(--ink); }
 
@@ -308,7 +323,7 @@ form input:hover, form select:hover, form textarea:hover { border-color: var(--i
 
 form input:focus, form select:focus, form textarea:focus {
     outline: none;
-    border-color: var(--seal);
+    border-color: var(--laurel);
     box-shadow: var(--ring);
 }
 
@@ -323,9 +338,9 @@ textarea { resize: vertical; min-height: 4.5rem; line-height: 1.5; }
 /* === Botões === */
 
 button, .botao {
-    background: var(--seal);
-    color: var(--surface);
-    border: 1px solid var(--seal);
+    background: var(--laurel);
+    color: var(--cover-ink);
+    border: 1px solid var(--laurel);
     padding: 0.55rem var(--space-5);
     border-radius: var(--r-md);
     font-size: var(--t-base);
@@ -343,9 +358,9 @@ button, .botao {
 }
 
 button:hover, .botao:hover {
-    background: var(--seal-strong);
-    border-color: var(--seal-strong);
-    color: var(--surface);
+    background: var(--laurel-strong);
+    border-color: var(--laurel-strong);
+    color: var(--cover-ink);
     text-decoration: none;
 }
 
@@ -480,17 +495,28 @@ button:disabled, .botao:disabled {
 
 .dados dt:last-of-type, .dados dd:last-of-type { border-bottom: none; }
 
-/* === Saldo — o herói da página, único momento de exibição serifada === */
+/* === Saldo — a capa da caderneta: o único momento de exibição === */
 
 .saldo-card {
+    position: relative;
     display: flex;
     align-items: center;
     gap: var(--space-4);
     padding: var(--space-5) var(--space-6);
-    background: var(--seal-tint);
-    border: 1px solid var(--seal-tint-line);
+    background: var(--cover);
+    border: 1px solid var(--cover);
     border-radius: var(--r-lg);
     margin: 0 0 var(--space-6);
+}
+
+/* Filete interno dourado, como a moldura gravada na capa */
+.saldo-card::after {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1px solid oklch(0.78 0.125 88 / 0.38);
+    border-radius: calc(var(--r-lg) - 4px);
+    pointer-events: none;
 }
 
 .saldo-card::before {
@@ -501,7 +527,6 @@ button:disabled, .botao:disabled {
     background-image: var(--moeda);
     background-size: contain;
     background-repeat: no-repeat;
-    filter: drop-shadow(0 2px 5px oklch(0.585 0.175 38 / 0.30));
 }
 
 .saldo-card-info {
@@ -513,9 +538,9 @@ button:disabled, .botao:disabled {
 .saldo-card-label {
     font-size: var(--t-xs);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--seal-ink);
-    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--cover-ink-2);
+    font-weight: 600;
 }
 
 .saldo-card-valor {
@@ -526,24 +551,22 @@ button:disabled, .botao:disabled {
 }
 
 .saldo-card-valor strong {
-    font-family: var(--fonte-display);
-    font-optical-sizing: auto;
+    font-stretch: var(--largura-display);
     font-size: var(--t-3xl);
     font-weight: 600;
-    color: var(--seal-ink);
+    color: var(--cover-ink);
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
     line-height: 1;
 }
 
 .saldo-card-valor span {
     font-size: var(--t-sm);
-    color: var(--seal-ink);
+    color: var(--cover-ink-2);
     font-weight: 600;
-    opacity: 0.8;
 }
 
-/* === Tabela === */
+/* === Tabela — página pautada do livro-razão === */
 
 .tabela-extrato {
     width: 100%;
@@ -564,17 +587,19 @@ button:disabled, .botao:disabled {
     vertical-align: top;
 }
 
+/* Cabeçalho com régua forte, como formulário impresso */
 .tabela-extrato th {
-    background: var(--surface-sunken);
+    background: var(--surface);
+    border-bottom: 2px solid var(--ink);
     font-weight: 700;
-    color: var(--ink-3);
+    color: var(--ink-2);
     font-size: var(--t-xs);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
 }
 
-.tabela-extrato tbody tr:nth-child(even) td { background: var(--surface-sunken); }
-.tabela-extrato tbody tr:hover td { background: var(--seal-tint); }
+.tabela-extrato td { font-variant-numeric: tabular-nums; }
+.tabela-extrato tbody tr:hover td { background: var(--laurel-tint); }
 .tabela-extrato tr:last-child td { border-bottom: none; }
 
 /* Recebido = verde; gasto = tinta neutra (resgate é saudável, não perda) */
@@ -686,8 +711,8 @@ button:disabled, .botao:disabled {
 }
 
 .lista-acoes li:hover {
-    border-color: var(--seal-tint-line);
-    background: var(--seal-tint);
+    border-color: var(--laurel-tint-line);
+    background: var(--laurel-tint);
 }
 
 .lista-acoes a {
@@ -706,8 +731,8 @@ button:disabled, .botao:disabled {
     transition: transform var(--t), color var(--t);
 }
 
-.lista-acoes li:hover a { color: var(--seal-ink); text-decoration: none; }
-.lista-acoes li:hover a::after { color: var(--seal); transform: translateX(3px); }
+.lista-acoes li:hover a { color: var(--laurel-ink); text-decoration: none; }
+.lista-acoes li:hover a::after { color: var(--laurel); transform: translateX(3px); }
 
 /* === Filtros === */
 
@@ -797,7 +822,7 @@ button:disabled, .botao:disabled {
 
 .card-vantagem .custo {
     font-weight: 700;
-    color: var(--seal-ink);
+    color: var(--laurel-ink);
     margin: 0;
     font-size: var(--t-base);
     display: inline-flex;
@@ -834,22 +859,23 @@ code, .tabela-extrato code {
     background: var(--surface-sunken);
     color: var(--ink);
     padding: 0.12rem 0.4rem;
-    border-radius: 4px;
+    border-radius: var(--r-sm);
     font-family: var(--fonte-mono);
     font-size: var(--t-xs);
     border: 1px solid var(--line);
 }
 
+/* Cupom de verificação — o carimbo na página */
 .codigo-destaque {
     font-family: var(--fonte-mono);
     font-size: var(--t-md);
-    background: var(--seal-tint);
-    color: var(--seal-ink);
-    border: 1px solid var(--seal-tint-line);
+    background: var(--laurel-tint);
+    color: var(--laurel-ink);
+    border: 1px solid var(--laurel-tint-line);
     border-radius: var(--r-sm);
     padding: 0.15rem 0.5rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
 }
 
 /* === Zona perigosa === */
@@ -883,7 +909,7 @@ code, .tabela-extrato code {
     display: inline;
     background: transparent;
     border: none;
-    color: var(--seal);
+    color: var(--laurel);
     cursor: pointer;
     padding: 0;
     margin: 0;
@@ -895,7 +921,7 @@ code, .tabela-extrato code {
     box-shadow: none;
     line-height: inherit;
 }
-.link-acao:hover { color: var(--seal-strong); background: transparent; }
+.link-acao:hover { color: var(--laurel-strong); background: transparent; }
 
 /* Ações inline em linhas de tabela (separadas por · ) */
 .acoes-linha {

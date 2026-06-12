@@ -1,0 +1,79 @@
+@startuml seq-envio-moedas
+' Diagrama de Sequência — Enviar moedas a um aluno (C04 + C05)
+' Lab04S02. Fiel à implementação: ProfessorController.transferir →
+' ServicoMoeda.transferir (transação atômica) → outbox de Notificacao →
+' DrainadorNotificacoes → RabbitMQ → ListenerEmail (entrega simulada).
+' Este é o diagrama de referência do fluxo assíncrono de e-mail; os demais
+' diagramas usam "ref" para este trecho.
+
+skinparam shadowing false
+title Sequência — Enviar Moedas (Professor → Aluno)
+
+actor "Professor" as prof
+participant "ProfessorController" as ctrl
+participant "ServicoMoeda" as servico
+participant "ProfessorDAO /\nAlunoDAO" as daos
+participant "TransferenciaMoedaDAO" as transfDAO
+participant "TemplatesEmailMoeda" as templates
+participant "ServicoNotificacao" as notif
+database "BD (H2)" as bd
+participant "DrainadorNotificacoes" as drainador
+queue "RabbitMQ\n(exchange notificacoes)" as rabbit
+participant "ListenerEmail" as listener
+
+prof -> ctrl : POST /professores/transferir\n(alunoId, valor, motivo)
+ctrl -> servico : transferir(professorId, alunoId, valor, motivo)
+
+group Transação atômica [@Transactional]
+  servico -> servico : valida valor > 0 e motivo não vazio
+  servico -> daos : findById(professorId), findById(alunoId)
+  daos -> bd : SELECT
+  bd --> daos
+  daos --> servico : Professor, Aluno
+  servico -> servico : valida mesma instituição,\naluno ativo, saldo suficiente
+
+  alt validação falha
+    servico --> ctrl : IllegalArgumentException /\nSaldoInsuficienteException
+    ctrl --> prof : reexibe formulário com erro
+  else validação ok
+    servico -> daos : update(professor −valor),\nupdate(aluno +valor)
+    daos -> bd : UPDATE saldos
+    servico -> transfDAO : save(TransferenciaMoeda)
+    transfDAO -> bd : INSERT transferencia_moeda
+
+    servico -> templates : recebimentoAluno(...)
+    templates --> servico : MensagemEmail (aluno)
+    servico -> notif : enviar(email do aluno, assunto, corpo)
+    notif -> bd : INSERT notificacao (PENDENTE)
+
+    servico -> templates : confirmacaoProfessor(...)
+    templates --> servico : MensagemEmail (professor)
+    servico -> notif : enviar(email do professor, assunto, corpo)
+    notif -> bd : INSERT notificacao (PENDENTE)
+
+    servico --> ctrl : TransferenciaMoeda
+    ctrl --> prof : 303 → /professores/extrato?sucesso=1
+  end
+end
+
+== Entrega assíncrona (Transactional Outbox) ==
+
+loop a cada 2s (@Scheduled fixedDelay)
+  drainador -> bd : SELECT notificacao\nWHERE status = PENDENTE (até 50)
+  bd --> drainador : pendentes
+  drainador -> rabbit : publicar(NotificacaoPublicada(id))
+end
+
+rabbit -> listener : NotificacaoPublicada(id)\n(fila notificacoes.email)
+listener -> bd : SELECT notificacao por id
+listener -> listener : entrega o e-mail\n(log [EMAIL-SIM])
+listener -> bd : UPDATE status = ENVIADA
+
+note right of listener
+  Dois e-mails por transferência:
+  ao aluno (recebimento) e ao
+  professor (confirmação) —
+  templates distintos (Lab04S01).
+end note
+
+@enduml

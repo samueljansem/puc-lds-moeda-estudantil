@@ -66,16 +66,16 @@ Voice: plain, respectful Brazilian Portuguese. States facts, never hypes.
    a record, not an app chasing attention.
 4. **Earned familiarity.** It is a task tool used by three roles, one of them a
    grader. Standard affordances, consistent vocabulary screen to screen, no
-   reinvented controls. Delight lives in moments (the balance, the seal), never
-   in friction.
+   reinvented controls. Delight lives in moments (the balance cover, the coin),
+   never in friction.
 5. **Simplicity is a constraint, not a fallback.** Server-rendered Thymeleaf,
    one hand-written CSS file, no framework, no JS build. The aesthetic must be
    achievable in plain CSS and stay readable for whoever grades it.
 
 ## Accessibility & Inclusion
 
-- WCAG 2.1 AA contrast for text and interactive states on the warm-paper
-  surface. Vermilion accent is used at weights that hold AA on paper.
+- WCAG 2.1 AA contrast for text and interactive states on the paper surface.
+  The laurel-green accent is used at weights that hold AA on paper.
 - Visible focus ring on every interactive element (the project already does
   this; keep it).
 - Status is never conveyed by color alone: dots, icons, and pt-BR text labels

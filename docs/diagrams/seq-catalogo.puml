@@ -1,0 +1,34 @@
+@startuml seq-catalogo
+' Diagrama de Sequência — Consultar catálogo de vantagens (C09 + C16)
+' Lab04S02. Fiel à implementação: CatalogoController.catalogo, aberto a
+' todos os papéis autenticados (somente leitura para não alunos); filtro
+' por custo máximo e por empresa como fragmento opcional (C16).
+
+skinparam shadowing false
+title Sequência — Catálogo de Vantagens (Aluno)
+
+actor "Usuário autenticado" as user
+participant "CatalogoController" as ctrl
+participant "AlunoDAO" as alunoDAO
+participant "ServicoVantagem" as servico
+participant "VantagemDAO" as dao
+database "BD (H2)" as bd
+
+user -> ctrl : GET /alunos/vantagens\n[?custoMaximo=N][&empresaId=M]
+
+opt papel = ALUNO
+  ctrl -> alunoDAO : findByCredencialLogin(login)
+  alunoDAO -> bd : SELECT aluno
+  note right : saldo e botão "Resgatar"\nsó aparecem para o aluno
+end
+
+ctrl -> servico : filtrarCatalogo(custoMaximo, empresaId)
+servico -> dao : filtrar(custoMaximo, empresaId)
+dao -> bd : SELECT vantagem WHERE ativa = true\n[AND custo <= ?][AND empresa_id = ?]
+bd --> dao
+dao --> servico : List<Vantagem>
+servico --> ctrl
+
+ctrl --> user : aluno-vantagens.html\n(cards: descrição, custo, foto, empresa;\nfiltros; resgate apenas para ALUNO)
+
+@enduml

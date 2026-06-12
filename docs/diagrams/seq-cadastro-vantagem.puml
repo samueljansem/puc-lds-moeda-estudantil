@@ -1,0 +1,36 @@
+@startuml seq-cadastro-vantagem
+' Diagrama de Sequência — Cadastrar vantagem (C07)
+' Lab04S02. Fiel à implementação: VantagemController.cadastrar (multipart,
+' restrito a EMPRESA_PARCEIRA) → ServicoVantagem.cadastrar (validações de
+' descrição, custo e foto JPEG/PNG ≤ 2 MB).
+
+skinparam shadowing false
+title Sequência — Cadastro de Vantagem (Empresa Parceira)
+
+actor "Empresa Parceira" as empresa
+participant "VantagemController" as ctrl
+participant "ServicoVantagem" as servico
+participant "VantagemDAO" as dao
+database "BD (H2)" as bd
+
+empresa -> ctrl : GET /empresas/vantagens/cadastrar
+ctrl --> empresa : formulário (empresa-vantagem-form)
+
+empresa -> ctrl : POST /empresas/vantagens/cadastrar\nmultipart (descricao, custo, foto)
+ctrl -> ctrl : parseCusto(custo),\nextrai bytes e content-type da foto
+ctrl -> servico : cadastrar(empresa, descricao,\ncusto, foto, contentType)
+
+group Transação atômica [@Transactional]
+  servico -> servico : valida descrição (≤500),\ncusto ≥ 1, foto JPEG/PNG ≤ 2 MB
+  alt validação falha
+    servico --> ctrl : IllegalArgumentException
+    ctrl --> empresa : reexibe formulário com erro
+  else validação ok
+    servico -> dao : save(Vantagem ativa=true)
+    dao -> bd : INSERT vantagem (foto em BLOB)
+    servico --> ctrl : Vantagem
+    ctrl --> empresa : 303 → /empresas/vantagens?sucesso=criada
+  end
+end
+
+@enduml

@@ -1,0 +1,39 @@
+@startuml seq-cadastro-empresa
+' Diagrama de Sequência — Cadastrar-se como empresa parceira (C06)
+' Lab04S02. Fiel à implementação: EmpresaParceiraController.cadastrar →
+' ServicoCadastro.cadastrarEmpresa (unicidade de CNPJ/e-mail/login).
+
+skinparam shadowing false
+title Sequência — Cadastro de Empresa Parceira
+
+actor "Visitante" as visitante
+participant "EmpresaParceiraController" as ctrl
+participant "ServicoCadastro" as servico
+participant "EmpresaParceiraDAO" as empresaDAO
+participant "CredencialDAO" as credDAO
+database "BD (H2)" as bd
+
+visitante -> ctrl : GET /empresas/cadastro
+ctrl --> visitante : formulário (empresa-cadastro)
+
+visitante -> ctrl : POST /empresas/cadastro\n(nome, email, cnpj, login, senha)
+ctrl -> servico : cadastrarEmpresa(form)
+
+group Transação atômica [@Transactional]
+  servico -> empresaDAO : existsByCnpj / existsByEmail
+  servico -> credDAO : existsByLogin
+  alt dado duplicado
+    servico --> ctrl : CadastroDuplicadoException(campo)
+    ctrl --> visitante : reexibe formulário\nindicando o campo duplicado
+  else dados únicos
+    servico -> servico : hash BCrypt da senha (cost 12)
+    servico -> credDAO : save(Credencial EMPRESA_PARCEIRA)
+    credDAO -> bd : INSERT credencial
+    servico -> empresaDAO : save(EmpresaParceira)
+    empresaDAO -> bd : INSERT usuario + empresa_parceira
+    servico --> ctrl : EmpresaParceira
+    ctrl --> visitante : 303 → /login?cadastrado=1
+  end
+end
+
+@enduml
