@@ -26,7 +26,7 @@
         <div th:if="${vantagem != null and vantagem.temFoto()}" style="margin-bottom: 1rem;">
             <p class="muted">Foto atual:</p>
             <img th:src="@{|/vantagens/${vantagem.id}/foto|}" alt="Foto atual"
-                 style="max-width: 200px; border: 1px solid var(--cor-borda); border-radius: 4px;">
+                 style="max-width: 200px; border: 1px solid var(--line); border-radius: var(--r-md);">
             <p class="muted">Para trocar, selecione um novo arquivo acima. Para manter, deixe vazio.</p>
         </div>
 

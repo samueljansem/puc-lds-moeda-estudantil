@@ -23,6 +23,22 @@ public class HomeController {
             return HttpResponse.seeOther(URI.create("/login"));
         }
         String role = authentication.getRoles().stream().findFirst().orElse("");
+        // Após o login cada papel cai na sua lista de vantagens, não no perfil.
+        // Aluno, professor e admin veem o catálogo (resgate só para o aluno);
+        // a empresa cai na lista das próprias vantagens que oferece.
+        return switch (role) {
+            case "ALUNO", "PROFESSOR", "ADMIN" -> HttpResponse.seeOther(URI.create("/alunos/vantagens"));
+            case "EMPRESA_PARCEIRA" -> HttpResponse.seeOther(URI.create("/empresas/vantagens"));
+            default -> HttpResponse.seeOther(URI.create("/login"));
+        };
+    }
+
+    // "Meu Perfil" no cabeçalho aponta para cá: leva cada papel ao seu perfil
+    // (admin não tem perfil, vai para o início administrativo).
+    @Get("/perfil")
+    @Secured(SecurityRule.IS_AUTHENTICATED)
+    public MutableHttpResponse<?> perfil(Authentication authentication) {
+        String role = authentication.getRoles().stream().findFirst().orElse("");
         return switch (role) {
             case "ALUNO" -> HttpResponse.seeOther(URI.create("/alunos/perfil"));
             case "EMPRESA_PARCEIRA" -> HttpResponse.seeOther(URI.create("/empresas/perfil"));

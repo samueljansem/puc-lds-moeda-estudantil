@@ -263,7 +263,68 @@ seção Testes para o que cada classe cobre).
 ## 8. RabbitMQ — *killer demo* de mensageria
 
 Esse é o roteiro pra mostrar o padrão **Transactional Outbox** ao vivo —
-o sistema continua funcionando mesmo com o broker fora do ar.
+o sistema continua funcionando mesmo com o broker fora do ar. O efeito fica
+muito mais claro com **dois logs lado a lado**: o da aplicação (publisher +
+os dois consumers) e o do broker (contadores das filas).
+
+### 8.0. Logs lado a lado com tmux
+
+**Pré-requisitos:** `tmux`, `watch`, `jq` e `curl`
+(no macOS: `brew install tmux watch jq`).
+
+Os níveis de log já vêm prontos em `src/main/resources/logback.xml`: os
+consumers (`ListenerEmail` / `ListenerWebhook`) logam em `INFO` e o publisher
+(`DrainadorNotificacoes`) em `DEBUG` — é a linha `Outbox: …` que mostra a
+publicação saindo do outbox.
+
+Abra uma sessão tmux com **3 panes** (`Ctrl-b %` divide na vertical,
+`Ctrl-b "` divide na horizontal):
+
+```bash
+tmux new -s moeda
+```
+
+**Pane 1 — Aplicação** · sobe o servidor e espelha o log num arquivo:
+
+```bash
+docker compose up -d
+./gradlew run 2>&1 | tee /tmp/moeda-app.log
+```
+
+**Pane 2 — Pipeline de notificação** · publisher + os 2 consumers, filtrado:
+
+```bash
+tail -f /tmp/moeda-app.log \
+  | grep --line-buffered -E 'Outbox:|EMAIL-SIM|WEBHOOK-SIM|Broker indispon'
+```
+
+**Pane 3 — Broker RabbitMQ** · contadores das duas filas, a cada 1s:
+
+```bash
+watch -n 1 -t '
+  resp=$(curl -s --max-time 2 -u guest:guest \
+    "http://localhost:15672/api/queues/%2F?columns=name,messages,message_stats.publish,message_stats.deliver_get")
+  if [ -n "$resp" ]; then
+    echo "$resp" | jq -r ".[] | \"  \(.name)  publicadas=\(.message_stats.publish // 0)  entregues=\(.message_stats.deliver_get // 0)  prontas=\(.messages)\""
+  else
+    echo "  (broker fora do ar — management API nao respondeu)"
+  fi
+'
+```
+
+> **Sem `jq`?** Troque a linha do `jq` por
+> `tr ',' '\n' | grep -E '"name"|"messages"|"publish"|"deliver_get"'`.
+> **Prefere o navegador?** O mesmo dado, com gráfico de taxa, está em
+> **<http://localhost:15672>** → aba *Queues* (login guest / guest).
+
+Com os 3 panes abertos, dispare qualquer ação que gere notificação (um
+resgate ou uma transferência). No **Pane 2** aparece primeiro
+`Outbox: N notificação(ões) pendente(s) — publicando…` (o publisher) e em
+seguida as linhas `[EMAIL-SIM]` / `[WEBHOOK-SIM]` (os consumers). Como cada
+notificação faz *fan-out* para as duas filas, **um resgate gera 1 linha de
+publicação + 4 linhas de consumo** (2 notificações × 2 filas). No **Pane 3**
+os contadores `publicadas` e `entregues` sobem **igualmente nas duas filas** —
+a prova visual do fanout.
 
 ### 8.1. Fluxo normal (broker ligado)
 
@@ -274,25 +335,33 @@ o sistema continua funcionando mesmo com o broker fora do ar.
    inicialmente com badge cinza **Pendente**.
 4. Em ~2 segundos, o drainer publica no exchange `notificacoes` e os dois
    listeners marcam **Enviada** (badge verde).
-5. Conferir no console da aplicação:
+5. No **Pane 2** (pipeline) aparece a sequência completa publisher → consumers:
    ```
-   [EMAIL-SIM]   to=demo.aluno@... subject="Cupom de resgate — ..." code=<uuid>
-   [WEBHOOK-SIM] POST /parceira/notify body=(id:42, codigo:"<uuid>", assunto:"...")
+   DEBUG DrainadorNotificacoes - Outbox: 2 notificação(ões) pendente(s) — publicando…
+   INFO  ListenerEmail   - [EMAIL-SIM]   to=demo.aluno@...   subject="Cupom de resgate — ..." code=<uuid>
+   INFO  ListenerWebhook - [WEBHOOK-SIM] POST /parceira/notify body=(id:N, codigo:"<uuid>", assunto:"...")
+   INFO  ListenerEmail   - [EMAIL-SIM]   to=demo.empresa@... subject="Resgate confirmado — ..." code=<uuid>
+   INFO  ListenerWebhook - [WEBHOOK-SIM] POST /parceira/notify body=(id:N, codigo:"<uuid>", assunto:"...")
    ```
-6. No painel <http://localhost:15672> → *Queues*: as filas
-   `notificacoes.email` e `notificacoes.webhook` mostram throughput.
+6. No **Pane 3** (broker), os contadores `publicadas` / `entregues` das filas
+   `notificacoes.email` e `notificacoes.webhook` sobem juntos (mesmo no painel
+   <http://localhost:15672> → *Queues*, com gráfico de throughput).
 
 ### 8.2. Degraded mode (broker fora do ar)
 
-1. `docker compose pause rabbitmq` — broker congelado.
+1. `docker compose pause rabbitmq` — broker congelado. No **Pane 3** o painel
+   passa a mostrar `(broker fora do ar — management API não respondeu)`, já
+   que a pausa congela também a management API.
 2. Logar como `demo.aluno`, resgatar uma vantagem.
 3. Cupom continua aparecendo **imediatamente** (caminho síncrono inalterado).
 4. `/notificacoes` mostra as duas linhas em **Pendente** — e ficam assim.
-5. No console: `WARN Broker indisponível ao publicar id=N. Republicação no
-   próximo tick.` aparecendo a cada 2 segundos.
-6. `docker compose unpause rabbitmq` — broker volta.
-7. Em até 2 segundos, as linhas pendentes viram **Enviada** e os logs
-   `[EMAIL-SIM]` / `[WEBHOOK-SIM]` aparecem.
+5. No **Pane 2**: `WARN ... Broker indisponível ao publicar id=N.
+   Republicação no próximo tick.` aparecendo a cada 2 segundos (o publisher
+   tentando e desistindo, sem perder a notificação).
+6. `docker compose unpause rabbitmq` — broker volta (Pane 3 volta a responder).
+7. Em até 2 segundos, o **Pane 2** dispara as linhas `Outbox: …` →
+   `[EMAIL-SIM]` / `[WEBHOOK-SIM]`, as linhas pendentes viram **Enviada** e os
+   contadores do **Pane 3** sobem.
 
 **O que isso prova:** o `INSERT` na tabela `notificacao` é a fonte da
 verdade transacional; o RabbitMQ é apenas o transporte. Nenhuma

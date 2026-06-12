@@ -5,7 +5,7 @@
 <div th:fragment="conteudo" class="card card--wide">
     <h1>Catálogo de Vantagens</h1>
 
-    <div class="saldo-card">
+    <div class="saldo-card" th:if="${aluno != null}">
         <div class="saldo-card-info">
             <span class="saldo-card-label">Seu saldo</span>
             <div class="saldo-card-valor">
@@ -14,6 +14,10 @@
             </div>
         </div>
     </div>
+
+    <p th:unless="${aluno != null}" class="muted">
+        Visualização do catálogo. O resgate de vantagens é exclusivo dos alunos.
+    </p>
 
     <p th:if="${erro == 'saldoInsuficiente'}" class="alerta-erro">
         Saldo insuficiente para resgatar esta vantagem.
@@ -45,12 +49,12 @@
     <div class="galeria-vantagens" th:if="${!vantagens.isEmpty()}">
         <div class="card-vantagem" th:each="v : ${vantagens}">
             <img th:if="${v.temFoto()}" th:src="@{|/vantagens/${v.id}/foto|}" alt="Foto da vantagem">
-            <img th:unless="${v.temFoto()}" src="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 140'&gt;&lt;rect fill='%23e5e7eb' width='220' height='140'/&gt;&lt;text x='110' y='75' font-family='sans-serif' font-size='12' fill='%2352525b' text-anchor='middle'&gt;sem foto&lt;/text&gt;&lt;/svg&gt;" alt="Sem foto">
+            <img th:unless="${v.temFoto()}" src="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 140'&gt;&lt;rect fill='%23f1ebe3' width='220' height='140'/&gt;&lt;text x='110' y='75' font-family='Georgia,serif' font-size='13' fill='%23a89a88' text-anchor='middle'&gt;sem foto&lt;/text&gt;&lt;/svg&gt;" alt="Sem foto">
             <div class="corpo">
                 <h3 th:text="${v.descricao}">Descrição</h3>
                 <p class="custo" th:text="${v.custo + ' moedas'}">0 moedas</p>
                 <p class="empresa" th:text="${v.empresa.nome}">Empresa</p>
-                <form th:action="@{|/alunos/vantagens/${v.id}/resgatar|}" method="POST">
+                <form th:if="${aluno != null}" th:action="@{|/alunos/vantagens/${v.id}/resgatar|}" method="POST">
                     <button type="submit" th:disabled="${aluno.saldo &lt; v.custo}">Resgatar</button>
                 </form>
             </div>

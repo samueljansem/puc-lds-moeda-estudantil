@@ -20,6 +20,7 @@ import io.micronaut.http.annotation.Produces;
 import io.micronaut.http.annotation.QueryValue;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.authentication.Authentication;
+import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.views.View;
 
 import java.net.URI;
@@ -27,8 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+// Catálogo aberto a todos os papéis (somente leitura para quem não é aluno);
+// o resgate em si continua restrito ao ALUNO no @Post abaixo.
 @Controller("/alunos/vantagens")
-@Secured("ALUNO")
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class CatalogoController {
 
     private final AlunoDAO alunoDAO;
@@ -53,7 +56,11 @@ public class CatalogoController {
                                         @QueryValue Optional<Integer> custoMaximo,
                                         @QueryValue Optional<Long> empresaId,
                                         @QueryValue(defaultValue = "") String erro) {
-        Aluno aluno = carregarAlunoLogado(authentication);
+        // Só há aluno (e saldo / botão de resgate) quando quem vê é um aluno.
+        // Outros papéis veem o catálogo em modo somente leitura.
+        Aluno aluno = authentication.getRoles().contains("ALUNO")
+                ? alunoDAO.findByCredencialLogin(authentication.getName()).orElse(null)
+                : null;
         Integer custoMax = custoMaximo.orElse(null);
         Long empId = empresaId.orElse(null);
         Map<String, Object> model = new HashMap<>();
@@ -69,6 +76,7 @@ public class CatalogoController {
 
     @Post(value = "/{id}/resgatar", consumes = MediaType.APPLICATION_FORM_URLENCODED)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Secured("ALUNO")
     public MutableHttpResponse<?> resgatar(Authentication authentication, @PathVariable Long id) {
         Aluno aluno = carregarAlunoLogado(authentication);
         try {

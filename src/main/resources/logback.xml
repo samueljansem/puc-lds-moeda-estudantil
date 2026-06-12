@@ -8,6 +8,10 @@
         </encoder>
     </appender>
 
+    <!-- Demo: mostra o passo de publicação do outbox (drainer) no log.
+         Os listeners já logam em INFO; isto acende o DEBUG do publisher. -->
+    <logger name="br.puc.moedaestudantil.messaging" level="debug"/>
+
     <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
