@@ -29,6 +29,7 @@ dependencies {
     implementation("io.micronaut.views:micronaut-views-thymeleaf")
     implementation("jakarta.validation:jakarta.validation-api")
     implementation("at.favre.lib:bcrypt:0.10.2")
+    implementation("com.resend:resend-java:4.4.0")
     compileOnly("io.micronaut:micronaut-http-client")
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("com.h2database:h2")

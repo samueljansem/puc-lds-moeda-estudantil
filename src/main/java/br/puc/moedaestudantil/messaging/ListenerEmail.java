@@ -2,30 +2,32 @@ package br.puc.moedaestudantil.messaging;
 
 import br.puc.moedaestudantil.dao.NotificacaoDAO;
 import br.puc.moedaestudantil.model.Notificacao;
+import br.puc.moedaestudantil.model.StatusNotificacao;
+import br.puc.moedaestudantil.service.EnviadorEmail;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
 import io.micronaut.rabbitmq.annotation.Queue;
 import io.micronaut.rabbitmq.annotation.RabbitListener;
 import jakarta.transaction.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Consumer da fila {@code notificacoes.email}: simula a entrega por e-mail.
+ * Consumer da fila {@code notificacoes.email}: entrega por e-mail via
+ * {@link EnviadorEmail} (Resend quando configurado; log simulado caso contrário).
  *
- * Side-effect real seria um {@code MailSender}; aqui é log estruturado.
- * Idempotente por {@link NotificacaoDAO#marcarEnviada} (UPDATE condicional).
+ * Idempotente: mensagens reentregues de notificação já {@code ENVIADA} viram
+ * no-op (sem reenvio de e-mail); {@link NotificacaoDAO#marcarEnviada} é um
+ * UPDATE condicional que protege contra corrida entre consumers.
  */
 @RabbitListener
 @Requires(notEnv = Environment.TEST)
 public class ListenerEmail {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ListenerEmail.class);
-
     private final NotificacaoDAO notificacaoDAO;
+    private final EnviadorEmail enviadorEmail;
 
-    public ListenerEmail(NotificacaoDAO notificacaoDAO) {
+    public ListenerEmail(NotificacaoDAO notificacaoDAO, EnviadorEmail enviadorEmail) {
         this.notificacaoDAO = notificacaoDAO;
+        this.enviadorEmail = enviadorEmail;
     }
 
     @Queue(AmqpTopologia.QUEUE_EMAIL)
@@ -34,8 +36,11 @@ public class ListenerEmail {
         Notificacao n = notificacaoDAO.findById(msg.id())
                 .orElseThrow(() -> new IllegalStateException("Notificacao não encontrada: " + msg.id()));
 
-        LOG.info("[EMAIL-SIM] to={} subject=\"{}\" code={}",
-                n.getDestinatario(), n.getAssunto(), n.getCodigoReferencia());
+        if (n.getStatus() == StatusNotificacao.ENVIADA) {
+            return; // reentrega duplicada: e-mail já saiu, só ack
+        }
+
+        enviadorEmail.enviar(n.getDestinatario(), n.getAssunto(), n.getCorpo());
 
         notificacaoDAO.marcarEnviada(msg.id());
     }

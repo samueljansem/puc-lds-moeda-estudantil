@@ -240,9 +240,17 @@ rm -rf data/
 
 ### Variáveis de Ambiente
 
-| Variável        | Default                                  | Descrição                  |
-| --------------- | ---------------------------------------- | -------------------------- |
-| `RABBITMQ_URI`  | `amqp://guest:guest@localhost:5672`      | URI AMQP do broker         |
+| Variável         | Default                                  | Descrição                                          |
+| ---------------- | ---------------------------------------- | -------------------------------------------------- |
+| `RABBITMQ_URI`   | `amqp://guest:guest@localhost:5672`      | URI AMQP do broker                                 |
+| `RESEND_API_KEY` | _(vazia — modo simulado)_                | Chave da API [Resend](https://resend.com) para envio real de e-mail |
+| `RESEND_FROM`    | `Moeda Estudantil <onboarding@resend.dev>` | Remetente dos e-mails                            |
+
+> [!NOTE]
+> Sem `RESEND_API_KEY`, os e-mails são apenas registrados em log
+> (`[EMAIL-SIM]`), como antes. Com a chave definida, o envio é real via
+> Resend. No plano gratuito sem domínio verificado, o Resend só entrega
+> para o e-mail do dono da conta e exige remetente `onboarding@resend.dev`.
 
 ---
 
@@ -259,7 +267,8 @@ O processamento das notificações usa **RabbitMQ** seguindo o padrão
    (tipo *fanout*). Se o broker estiver indisponível, sai silenciosamente
    — o próximo tick republica.
 3. **Consumers** em fan-out (mesma mensagem em duas filas independentes):
-   - `notificacoes.email` → `ListenerEmail` simula entrega por e-mail.
+   - `notificacoes.email` → `ListenerEmail` entrega por e-mail via
+     Resend (`RESEND_API_KEY` definida) ou simula em log (default).
    - `notificacoes.webhook` → `ListenerWebhook` simula POST ao sistema
      da empresa parceira.
 4. **Idempotência**: o `UPDATE` que marca `ENVIADA` é condicional

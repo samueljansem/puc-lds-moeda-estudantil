@@ -7,7 +7,7 @@ micronaut:
     authentication: session
     endpoints:
       logout:
-        enabled: false   # usamos LogoutController próprio
+        enabled: false # usamos LogoutController próprio
     redirect:
       login-success: /
       login-failure: /login?erro
@@ -26,7 +26,7 @@ micronaut:
       cookie-secure: false
   views:
     thymeleaf:
-      cache: false   # desliga cache em dev; ligar em produção
+      cache: false # desliga cache em dev; ligar em produção
   router:
     static-resources:
       css:
@@ -35,10 +35,10 @@ micronaut:
 
 datasources:
   default:
-    url: "jdbc:h2:./data/moedaestudantil;DB_CLOSE_ON_EXIT=FALSE"
+    url: 'jdbc:h2:./data/moedaestudantil;DB_CLOSE_ON_EXIT=FALSE'
     driver-class-name: org.h2.Driver
     username: sa
-    password: ""
+    password: ''
     dialect: H2
 
 flyway:
@@ -52,8 +52,14 @@ jpa:
     properties:
       hibernate:
         hbm2ddl:
-          auto: validate   # entidades JPA precisam casar com o schema migrado
+          auto: validate # entidades JPA precisam casar com o schema migrado
         show_sql: false
+
+resend:
+  # A chave fica fora do yml de propósito: defina RESEND_API_KEY no ambiente
+  # para ativar o envio real (EnviadorEmailResend); sem ela, o EnviadorEmailLog
+  # apenas registra o e-mail em log (modo simulado).
+  from: ${RESEND_FROM:`Moeda Estudantil <hire@samueljansem.dev>`}
 
 rabbitmq:
   # Default aponta pro broker do docker-compose. Override via env var.
