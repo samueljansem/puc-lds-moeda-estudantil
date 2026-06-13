@@ -40,7 +40,7 @@ public class ListenerEmail {
             return; // reentrega duplicada: e-mail já saiu, só ack
         }
 
-        enviadorEmail.enviar(n.getDestinatario(), n.getAssunto(), n.getCorpo());
+        enviadorEmail.enviar(n);
 
         notificacaoDAO.marcarEnviada(msg.id());
     }

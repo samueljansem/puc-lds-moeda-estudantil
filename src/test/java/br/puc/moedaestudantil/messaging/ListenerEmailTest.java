@@ -61,8 +61,8 @@ class ListenerEmailTest {
         final List<String> enviados = new ArrayList<>();
 
         @Override
-        public void enviar(String para, String assunto, String corpo) {
-            enviados.add(para);
+        public void enviar(Notificacao n) {
+            enviados.add(n.getDestinatario());
         }
     }
 }

@@ -129,3 +129,7 @@ restyles without template churn.
   button.
 - **Verification code (`.codigo-destaque`)** — the stamp on the page: mono,
   letterspaced, laurel ink on laurel tint.
+- **Transactional email (`MolduraEmailHtml`)** — the same system applied to
+  the HTML part of outgoing mail: cover header with coin and gold trim, card
+  on paper, verification code as the stamp. Email clients don't support OKLCH,
+  so the tokens above are converted to sRGB hex constants in that class.

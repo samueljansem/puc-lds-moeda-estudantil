@@ -1,5 +1,6 @@
 package br.puc.moedaestudantil.service;
 
+import br.puc.moedaestudantil.model.Notificacao;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
@@ -16,7 +17,8 @@ public class EnviadorEmailLog implements EnviadorEmail {
     private static final Logger LOG = LoggerFactory.getLogger(EnviadorEmailLog.class);
 
     @Override
-    public void enviar(String para, String assunto, String corpo) {
-        LOG.info("[EMAIL-SIM] to={} subject=\"{}\"", para, assunto);
+    public void enviar(Notificacao n) {
+        LOG.info("[EMAIL-SIM] to={} subject=\"{}\" code={}",
+                n.getDestinatario(), n.getAssunto(), n.getCodigoReferencia());
     }
 }

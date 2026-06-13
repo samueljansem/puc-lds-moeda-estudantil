@@ -25,7 +25,7 @@ class ListenerWebhookTest {
         var n = pendente(51L);
         var dao = new FakeNotificacaoDAO(List.of(n));
         // Simula que o ListenerEmail rodou primeiro:
-        new ListenerEmail(dao, (para, assunto, corpo) -> { }).onMessage(new NotificacaoPublicada(51L));
+        new ListenerEmail(dao, notificacao -> { }).onMessage(new NotificacaoPublicada(51L));
 
         // Webhook recebe a mesma mensagem (fanout) — UPDATE retorna 0 linhas, sem throw.
         new ListenerWebhook(dao).onMessage(new NotificacaoPublicada(51L));
