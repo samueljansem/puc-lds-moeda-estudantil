@@ -394,7 +394,7 @@ Resultado esperado: **`BUILD SUCCESSFUL`** com ~30 testes.
 
 | Foto | Nome | E-mail | GitHub |
 | :---: | :---: | :---: | :---: |
-| 👤 | Samuel Jansem | sj@tsl.io | [@samueljansem](https://github.com/samueljansem) |
+| 👤 | Samuel Jansem | hire@samueljansem.dev | [@samueljansem](https://github.com/samueljansem) |
 
 > _Substitua acima conforme os integrantes reais do grupo._
 
